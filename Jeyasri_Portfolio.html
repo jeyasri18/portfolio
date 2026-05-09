@@ -4,174 +4,406 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Jeyasri Sundar · Portfolio</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Courier+Prime:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
-  body { background: #050a14; overflow: hidden; width: 100vw; height: 100vh; font-family: system-ui, sans-serif; }
-  canvas { display: block; }
-  #ui { position: fixed; top: 24px; left: 28px; color: rgba(255,255,255,0.85); pointer-events: none; z-index: 10; }
-  #ui h1 { font-size: 56px; font-weight: 100; letter-spacing: 0.22em; text-transform: uppercase; color: rgba(255,210,225,0.95); margin-bottom: 8px; line-height: 1; transition: color 0.4s; }
-  #ui p { font-size: 11px; letter-spacing: 0.12em; color: rgba(255,180,210,0.5); transition: opacity 0.5s, color 0.4s; margin-bottom: 14px; }
-  #coords { position: fixed; bottom: 24px; left: 28px; font-family: 'Courier New', monospace; font-size: 12px; color: rgba(255,180,210,0.4); letter-spacing: 0.08em; pointer-events: none; z-index: 10; transition: color 0.4s; }
-  #loading { position: fixed; inset: 0; background: #050a14; display: flex; flex-direction: column; align-items: center; justify-content: center; color: rgba(255,220,230,0.6); font-size: 12px; letter-spacing: 0.2em; text-transform: uppercase; gap: 16px; z-index: 100; transition: opacity 1s; }
-  .ring { width: 40px; height: 40px; border: 1px solid rgba(255,255,255,0.12); border-top-color: rgba(255,220,235,0.8); border-radius: 50%; animation: spin 1s linear infinite; }
+  body { background: #050a14; overflow: hidden; width: 100vw; height: 100vh; font-family: 'Courier Prime', monospace; }
+  canvas { display: block; position: fixed; inset: 0; z-index: 0; }
+
+  /* ─── INTRO SCREEN ───────────────────────────────────────── */
+  #intro-screen {
+    position: fixed; inset: 0; z-index: 500;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    background: transparent;
+    transition: opacity 0.9s ease;
+  }
+  #intro-screen.fade-out { opacity: 0; pointer-events: none; }
+
+  .intro-eyebrow {
+    font-family: 'Courier Prime', monospace;
+    font-size: 10px; letter-spacing: 0.4em; text-transform: uppercase;
+    color: rgba(255,180,210,0.4); margin-bottom: 32px;
+    opacity: 0; animation: fadeUp 0.8s ease 0.4s forwards;
+  
+  }
+  .intro-name {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(52px, 8vw, 110px);
+    font-weight: 300; line-height: 0.9;
+    color: rgba(255,220,235,0.92);
+    letter-spacing: 0.04em;
+    text-align: center;
+    margin-bottom: 20px;
+    margin-top: -200px;
+    opacity: 0; animation: fadeUp 0.9s ease 0.7s forwards;
+  }
+  .intro-name em {
+    font-style: italic;
+    color: rgba(224,197,143,0.85);
+  }
+
+  .intro-tagline {
+    font-family: 'Courier Prime', monospace;
+    font-size: 11px; letter-spacing: 0.22em; text-transform: uppercase;
+    color: rgba(255,180,210,0.5); text-align: center;
+    opacity: 0; animation: fadeUp 0.7s ease 1.3s forwards;
+    margin-top: 20px;
+    margin-bottom: 120px;
+  }
+  .intro-btn {
+    font-family: 'Courier Prime', monospace;
+    font-size: 10px; letter-spacing: 0.35em; text-transform: uppercase;
+    background: transparent;
+    border: 1px solid rgba(224,197,143,0.5);
+    color: rgba(224,197,143,0.85);
+    padding: 14px 40px; cursor: pointer;
+    transition: background 0.25s, color 0.25s, border-color 0.25s;
+    border-radius: 0;
+    opacity: 0; animation: fadeUp 0.7s ease 1.6s forwards;
+  }
+  .intro-btn:hover {
+    background: rgba(224,197,143,0.1);
+    border-color: rgba(224,197,143,0.9);
+    color: rgba(224,197,143,1);
+  }
+  .intro-corner {
+    position: absolute; bottom: 28px; right: 32px;
+    font-family: 'Courier Prime', monospace;
+    font-size: 9px; letter-spacing: 0.25em; text-transform: uppercase;
+    color: rgba(255,180,210,0.2);
+    opacity: 0; animation: fadeIn 1s ease 2s forwards;
+  }
+  .intro-corner-tl {
+    position: absolute; top: 28px; left: 32px;
+    font-family: 'Courier Prime', monospace;
+    font-size: 9px; letter-spacing: 0.25em; text-transform: uppercase;
+    color: rgba(255,180,210,0.2);
+    opacity: 0; animation: fadeIn 1s ease 2s forwards;
+  }
+  /* Subtle grid overlay on intro */
+  #intro-screen::before {
+    content: '';
+    position: absolute; inset: 0;
+    background-image:
+      linear-gradient(rgba(255,180,210,0.02) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,180,210,0.02) 1px, transparent 1px);
+    background-size: 80px 80px;
+    pointer-events: none;
+  }
+
+  .intro-click-hint {
+    display: flex; flex-direction: column; align-items: center; gap: 6px;
+    margin-bottom: 10px;
+    opacity: 0; animation: fadeUp 0.7s ease 1.9s forwards;
+  }
+  .intro-click-label {
+    font-family: 'Courier Prime', monospace;
+    font-size: 9px; letter-spacing: 0.35em; text-transform: uppercase;
+    color: rgba(224,197,143,0.45);
+  }
+  .intro-click-arrow {
+    font-size: 18px; color: rgba(224,197,143,0.45);
+    animation: bounce 1.6s ease-in-out 2.2s infinite;
+  }
+  @keyframes bounce {
+    0%,100% { transform: translateY(0); opacity: 0.45; }
+    50%      { transform: translateY(5px); opacity: 0.8; }
+  }
+  @keyframes bounceLeft {
+    0%,100% { transform: translateX(0); opacity: 0.45; }
+    50%      { transform: translateX(-5px); opacity: 0.8; }
+  }
+  #journey-hint { pointer-events: none; }
+  #journey-hint span:last-child { animation: bounceLeft 1.6s ease-in-out infinite; }
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(18px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes fadeIn {
+    from { opacity: 0; } to { opacity: 1; }
+  }
+
+  /* ─── LOADING ────────────────────────────────────────────── */
+  #loading {
+    position: fixed; inset: 0; background: transparent;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    color: rgba(255,220,230,0.6); font-size: 10px; letter-spacing: 0.3em;
+    text-transform: uppercase; gap: 16px; z-index: 400; transition: opacity 1s;
+    font-family: 'Courier Prime', monospace;
+  }
+  .ring { width: 32px; height: 32px; border: 1px solid rgba(255,255,255,0.1); border-top-color: rgba(224,197,143,0.8); border-radius: 50%; animation: spin 1s linear infinite; }
   @keyframes spin { to { transform: rotate(360deg); } }
 
-  /* TOP NAV */
+  /* ─── GLOBE UI ───────────────────────────────────────────── */
+  #globe-ui { position: fixed; inset: 0; z-index: 10; pointer-events: none; display: none; }
+  #globe-ui.visible { display: block; }
+
+  /* Left name block */
+  #ui { position: fixed; top: 28px; left: 28px; pointer-events: none; z-index: 20; }
+  #ui h1 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 30px; font-weight: 300; letter-spacing: 0.18em; text-transform: uppercase;
+    color: rgba(255,210,225,0.9); line-height: 1.4; transition: color 0.4s;
+  }
+  #ui p {
+    font-family: 'Courier Prime', monospace;
+    font-size: 9px; letter-spacing: 0.2em; color: rgba(255,180,210,0.4);
+    transition: opacity 0.5s, color 0.4s; margin-top: 8px;
+  }
+  #plane-btn {
+    font-family: 'Courier Prime', monospace;
+    background: rgba(224,197,143,0.08); border: 1px solid rgba(224,197,143,0.35);
+    color: rgba(224,197,143,0.85); border-radius: 0;
+    padding: 9px 20px; cursor: pointer;
+    display: inline-flex; align-items: center; gap: 8px;
+    transition: background 0.25s, border-color 0.25s, color 0.25s, transform 0.15s;
+    pointer-events: all; margin-top: 14px;
+    font-size: 9px; letter-spacing: 0.3em; text-transform: uppercase;
+  }
+  #plane-btn:hover { background: rgba(224,197,143,0.15); border-color: rgba(224,197,143,0.7); color: rgba(224,197,143,1); transform: translateX(3px); }
+  #plane-btn.hidden { opacity: 0; pointer-events: none; }
+
+  #coords {
+    position: fixed; bottom: 24px; left: 28px;
+    font-family: 'Courier Prime', monospace;
+    font-size: 10px; color: rgba(255,180,210,0.35); letter-spacing: 0.12em;
+    pointer-events: none; z-index: 20; transition: color 0.4s;
+  }
+
+  /* ─── LEFT VERTICAL NAV ─────────────────────────────────── */
   #top-nav {
     position: fixed;
-    top: 20px;
-    left: 50%;
-    transform: translateX(-50%);
-    display: flex;
-    flex-direction: row;
-    gap: 4px;
-    z-index: 60;
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity 0.5s, background 0.4s, border-color 0.4s;
-    background: rgba(255,180,210,0.1);
-    border: 1px solid rgba(255,160,200,0.25);
-    border-radius: 50px;
-    padding: 5px 7px;
+    left: 0; top: 50%;
+    transform: translateY(-50%);
+    display: flex; flex-direction: column;
+    gap: 0; z-index: 60;
+    opacity: 0; pointer-events: none;
+    transition: opacity 0.5s;
+    background: rgba(5,10,20,0.7);
+    border-right: 1px solid rgba(224,197,143,0.15);
     backdrop-filter: blur(16px);
-    white-space: nowrap;
+    padding: 6px 0;
   }
   #top-nav.visible { opacity: 1; pointer-events: all; }
-  .nav-item {
-    display: flex; align-items: center; gap: 6px;
-    cursor: pointer; border-radius: 50px;
-    padding: 7px 15px;
-    color: rgba(255,190,215,0.7);
-    font-size: 11px; letter-spacing: 0.13em; text-transform: uppercase;
-    transition: background 0.2s, color 0.2s;
-  }
-  .nav-item:hover { background: rgba(255,180,210,0.15); color: rgba(255,220,240,0.95); }
-  .nav-item.active { background: rgba(255,180,210,0.2); color: rgba(255,230,245,1); }
-  .nav-dot { width: 5px; height: 5px; border-radius: 50%; background: currentColor; flex-shrink: 0; opacity: 0.7; }
 
-  /* DAY/NIGHT */
+  .nav-item {
+    display: flex; align-items: center; gap: 10px;
+    cursor: pointer; padding: 12px 20px 12px 16px;
+    color: rgba(255,190,215,0.55);
+    font-family: 'Courier Prime', monospace;
+    font-size: 9px; letter-spacing: 0.25em; text-transform: uppercase;
+    transition: background 0.2s, color 0.2s;
+    border-radius: 0;
+    border-left: 2px solid transparent;
+    white-space: nowrap;
+  }
+  .nav-item:hover { background: rgba(224,197,143,0.06); color: rgba(255,220,240,0.9); border-left-color: rgba(224,197,143,0.3); }
+  .nav-item.active { background: rgba(224,197,143,0.08); color: rgba(224,197,143,0.95); border-left-color: rgba(224,197,143,0.7); }
+  .nav-dot { width: 4px; height: 4px; background: currentColor; flex-shrink: 0; opacity: 0.6; }
+
+  /* ─── DAY/NIGHT ─────────────────────────────────────────── */
   #daynight-btn {
     position: fixed; top: 20px; right: 24px; z-index: 60;
-    background: rgba(255,180,210,0.1); border: 1px solid rgba(255,160,200,0.25);
-    border-radius: 50px; padding: 8px 16px;
-    color: rgba(255,210,230,0.85); font-size: 11px; letter-spacing: 0.15em; text-transform: uppercase;
+    background: rgba(5,10,20,0.6); border: 1px solid rgba(224,197,143,0.2);
+    border-radius: 0; padding: 9px 16px;
+    color: rgba(224,197,143,0.8); font-size: 9px; letter-spacing: 0.25em; text-transform: uppercase;
     cursor: pointer; display: flex; align-items: center; gap: 8px;
-    backdrop-filter: blur(16px);
-    transition: background 0.3s, border-color 0.3s, color 0.3s;
-    font-family: system-ui, sans-serif;
+    backdrop-filter: blur(16px); transition: background 0.3s, border-color 0.3s, color 0.3s;
+    font-family: 'Courier Prime', monospace;
   }
-  #daynight-btn:hover { background: rgba(255,180,210,0.2); border-color: rgba(255,160,200,0.5); color:rgba(255,230,245,1); }
-  #daynight-btn .dn-icon { font-size: 15px; line-height:1; }
+  #daynight-btn:hover { background: rgba(224,197,143,0.1); border-color: rgba(224,197,143,0.5); color: rgba(224,197,143,1); }
+  #daynight-btn .dn-icon { font-size: 13px; line-height: 1; }
 
-  /* PLANE BTN */
-  #plane-btn { background: rgba(255,180,210,0.1); border: 1px solid rgba(255,160,200,0.3); color:rgba(255,210,230,0.9); border-radius:50px; padding:8px 18px; cursor:pointer; display:inline-flex; align-items:center; gap:8px; transition: background 0.3s, border-color 0.3s, color 0.3s, transform 0.15s; backdrop-filter:blur(8px); font-family:system-ui,sans-serif; pointer-events:all; }
-  #plane-btn:hover { background:rgba(255,180,210,0.2); border-color:rgba(255,160,200,0.55); color:rgba(255,235,248,1); transform:scale(1.05); }
-  #plane-btn .plane-icon { font-size:16px; line-height:1; }
-  #plane-btn .btn-label { font-size:11px; letter-spacing:0.18em; text-transform:uppercase; opacity:0.85; }
-  #plane-btn.hidden { opacity:0; pointer-events:none; }
+  /* ─── FLIGHT STATUS ─────────────────────────────────────── */
+  #flight-status {
+    position: fixed; bottom: 32px; left: 50%; transform: translateX(-50%);
+    background: rgba(5,10,20,0.9); border: 1px solid rgba(224,197,143,0.2);
+    border-radius: 0; padding: 10px 24px;
+    color: rgba(255,255,255,0.75); font-family: 'Courier Prime', monospace;
+    font-size: 9px; letter-spacing: 0.3em; text-transform: uppercase;
+    display: flex; align-items: center; gap: 12px;
+    backdrop-filter: blur(10px); opacity: 0; transition: opacity 0.4s;
+    pointer-events: none; z-index: 50;
+  }
+  #flight-status.visible { opacity: 1; }
+  .pulse-dot { width: 5px; height: 5px; background: rgba(224,197,143,0.9); animation: pulse 1.2s ease-in-out infinite; }
+  @keyframes pulse { 0%,100%{opacity:1;transform:scale(1);}50%{opacity:0.3;transform:scale(0.5);} }
 
-  /* FLIGHT STATUS */
-  #flight-status { position:fixed; bottom:32px; left:50%; transform:translateX(-50%); background:rgba(10,20,40,0.85); border:1px solid rgba(255,255,255,0.15); border-radius:50px; padding:8px 20px; color:rgba(255,255,255,0.8); font-size:12px; letter-spacing:0.15em; text-transform:uppercase; display:flex; align-items:center; gap:10px; backdrop-filter:blur(10px); opacity:0; transition:opacity 0.4s; pointer-events:none; z-index:50; }
-  #flight-status.visible { opacity:1; }
-  .pulse-dot { width:6px; height:6px; background:#E0C58F; border-radius:50%; animation:pulse 1.2s ease-in-out infinite; }
-  @keyframes pulse { 0%,100%{opacity:1;transform:scale(1);}50%{opacity:0.4;transform:scale(0.6);} }
+  /* ─── MODAL ─────────────────────────────────────────────── */
+  #modal-overlay {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.5);
+    display: flex; align-items: center; justify-content: center;
+    z-index: 200; opacity: 0; pointer-events: none;
+    transition: opacity 0.4s; backdrop-filter: blur(3px);
+  }
+  #modal-overlay.visible { opacity: 1; pointer-events: all; }
 
-  /* MODAL */
-  #modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.55); display:flex; align-items:center; justify-content:center; z-index:200; opacity:0; pointer-events:none; transition:opacity 0.4s; backdrop-filter:blur(4px); }
-  #modal-overlay.visible { opacity:1; pointer-events:all; }
-  .modal-card { background:#E0C58F; border:1px solid rgba(255,255,255,0.22); border-radius:20px; padding:34px 38px; max-width:500px; width:92%; color:#1a1200; position:relative; display:none; max-height:88vh; overflow-y:auto; }
-  .modal-card.active { display:block; }
-  .modal-card h2 { font-size:25px; font-weight:600; letter-spacing:0.02em; margin-bottom:4px; color:#1a1200; }
-  .modal-card .subtitle { font-size:12.5px; color:#4a3800; letter-spacing:0.1em; margin-bottom:20px; }
-  .modal-card p { font-size:13.5px; line-height:1.78; color:#2a1f00; margin-bottom:10px; }
-  .modal-footer { display:flex; justify-content:space-between; align-items:center; margin-top:22px; }
-  .dot-row { display:flex; gap:6px; align-items:center; }
-  .dot { width:7px; height:7px; border-radius:50%; background:rgba(26,18,0,0.2); transition:background 0.3s; }
-  .dot.on { background:#1a1200; }
-  .close-btn { position:absolute; top:16px; right:20px; background:none; border:none; color:#4a3800; font-size:22px; cursor:pointer; line-height:1; transition:color 0.2s; }
-  .close-btn:hover { color:#1a1200; }
-  .loc-badge { display:inline-flex; align-items:center; gap:6px; border-radius:50px; padding:4px 14px; font-size:11px; letter-spacing:0.15em; text-transform:uppercase; margin-bottom:16px; border:1px solid rgba(26,18,0,0.25); background:rgba(26,18,0,0.08); color:#3a2800; }
-  .next-btn { border-radius:50px; padding:10px 22px; font-size:12.5px; letter-spacing:0.1em; cursor:pointer; display:flex; align-items:center; gap:8px; transition:background 0.2s,transform 0.15s; border:1.5px solid rgba(26,18,0,0.5); background:#1a1200; font-family:system-ui,sans-serif; white-space:nowrap; color:#E0C58F; font-weight:500; }
-  .next-btn:hover { background:#2e2000; transform:translateY(-1px); }
-  .tag-row { display:flex; flex-wrap:wrap; gap:6px; margin-top:5px; margin-bottom:14px; }
-  .tag { font-size:11px; padding:3px 10px; border-radius:50px; border:1px solid rgba(26,18,0,0.25); color:#3a2800; background:rgba(26,18,0,0.07); letter-spacing:0.04em; }
-  .exp-entry { margin-bottom:14px; }
-  .exp-title { font-size:13px; font-weight:600; color:#1a1200; margin-bottom:2px; }
-  .exp-meta { font-size:11px; color:#5a4200; letter-spacing:0.06em; margin-bottom:5px; }
-  .exp-entry ul { padding-left:15px; }
-  .exp-entry ul li { font-size:12.5px; color:#2a1f00; line-height:1.72; }
-  .divider { border:none; border-top:1px solid rgba(26,18,0,0.15); margin:12px 0; }
-  .contact-row { display:flex; flex-direction:column; gap:10px; margin-bottom:18px; }
-  .contact-item { display:flex; align-items:center; gap:10px; font-size:13px; color:#2a1f00; }
-  .profile-img { width:100%; height:160px; object-fit:cover; object-position:center; border-radius:12px; margin-top:18px; margin-bottom:0; display:block; }
-  .back-btn { background:none; border:1px solid rgba(26,18,0,0.3); border-radius:50px; padding:6px 14px; font-size:11px; letter-spacing:0.1em; cursor:pointer; color:#3a2800; font-family:system-ui,sans-serif; transition:background 0.2s; margin-bottom:16px; display:inline-flex; align-items:center; gap:6px; }
-  .back-btn:hover { background:rgba(26,18,0,0.08); }
+  .modal-card {
+    background: #e8d5a3; border: 1px solid rgba(26,18,0,0.2);
+    border-radius: 0; padding: 36px 40px;
+    max-width: 500px; width: 92%; color: #1a1200;
+    position: relative; display: none;
+    max-height: 88vh; overflow-y: auto;
+    font-family: 'Courier Prime', monospace;
+    /* Subtle paper texture */
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+  }
+  .modal-card.active { display: block; }
+  .modal-card h2 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 28px; font-weight: 400; letter-spacing: 0.02em;
+    margin-bottom: 4px; color: #1a1200;
+  }
+  .modal-card .subtitle {
+    font-family: 'Courier Prime', monospace;
+    font-size: 10px; color: #5a4200; letter-spacing: 0.18em;
+    text-transform: uppercase; margin-bottom: 20px;
+  }
+  .modal-card p { font-size: 13px; line-height: 1.82; color: #2a1f00; margin-bottom: 10px; }
+  .modal-footer { display: flex; justify-content: space-between; align-items: center; margin-top: 24px; }
+  .dot-row { display: flex; gap: 5px; align-items: center; }
+  .dot { width: 6px; height: 6px; background: rgba(26,18,0,0.2); transition: background 0.3s; }
+  .dot.on { background: #1a1200; }
+  .close-btn {
+    position: absolute; top: 16px; right: 20px;
+    background: none; border: none; color: #6a5200;
+    font-size: 18px; cursor: pointer; line-height: 1;
+    transition: color 0.2s; font-family: 'Courier Prime', monospace;
+    letter-spacing: 0;
+  }
+  .close-btn:hover { color: #1a1200; }
+  .loc-badge {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 3px 10px; font-family: 'Courier Prime', monospace;
+    font-size: 9px; letter-spacing: 0.2em; text-transform: uppercase;
+    margin-bottom: 16px; border: 1px solid rgba(26,18,0,0.2);
+    background: rgba(26,18,0,0.05); color: #4a3800; border-radius: 0;
+  }
+  .next-btn {
+    border-radius: 0; padding: 10px 22px;
+    font-family: 'Courier Prime', monospace;
+    font-size: 9px; letter-spacing: 0.25em; text-transform: uppercase;
+    cursor: pointer; display: flex; align-items: center; gap: 8px;
+    transition: background 0.2s, transform 0.15s;
+    border: 1px solid rgba(26,18,0,0.6); background: #1a1200;
+    color: #e8d5a3; font-weight: 400; white-space: nowrap;
+  }
+  .next-btn:hover { background: #2e2000; transform: translateX(3px); }
 
-  /* PROJECT CARDS */
-  .proj-card { background:rgba(26,18,0,0.08); border:1px solid rgba(26,18,0,0.15); border-radius:12px; padding:14px 16px; margin-bottom:10px; cursor:pointer; transition:background 0.2s,transform 0.15s,border-color 0.2s; display:flex; justify-content:space-between; align-items:center; }
-  .proj-card:hover { background:rgba(26,18,0,0.14); transform:translateX(3px); border-color:rgba(26,18,0,0.3); }
-  .proj-card-title { font-size:13px; font-weight:600; color:#1a1200; margin-bottom:2px; }
-  .proj-card-meta { font-size:11px; color:#5a4200; }
-  .proj-arrow { font-size:16px; color:#4a3800; opacity:0.6; }
+  .tag-row { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 5px; margin-bottom: 14px; }
+  .tag {
+    font-family: 'Courier Prime', monospace;
+    font-size: 9px; padding: 3px 9px; border-radius: 0;
+    border: 1px solid rgba(26,18,0,0.22); color: #3a2800;
+    background: rgba(26,18,0,0.06); letter-spacing: 0.06em;
+  }
+  .exp-entry { margin-bottom: 14px; }
+  .exp-title { font-family: 'Cormorant Garamond', serif; font-size: 15px; font-weight: 600; color: #1a1200; margin-bottom: 2px; }
+  .exp-meta { font-family: 'Courier Prime', monospace; font-size: 9px; color: #6a5200; letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 6px; }
+  .exp-entry ul { padding-left: 14px; }
+  .exp-entry ul li { font-size: 12.5px; color: #2a1f00; line-height: 1.75; }
+  .divider { border: none; border-top: 1px solid rgba(26,18,0,0.12); margin: 14px 0; }
+  .contact-row { display: flex; flex-direction: column; gap: 10px; margin-bottom: 18px; }
+  .contact-item { display: flex; align-items: center; gap: 10px; font-size: 12.5px; color: #2a1f00; }
+  .profile-img { width: 100%; height: 160px; object-fit: cover; object-position: center; border-radius: 0; margin-top: 18px; display: block; }
+  .back-btn {
+    background: none; border: 1px solid rgba(26,18,0,0.25); border-radius: 0;
+    padding: 5px 12px; font-family: 'Courier Prime', monospace;
+    font-size: 9px; letter-spacing: 0.15em; text-transform: uppercase;
+    cursor: pointer; color: #4a3800; transition: background 0.2s;
+    margin-bottom: 16px; display: inline-flex; align-items: center; gap: 6px;
+  }
+  .back-btn:hover { background: rgba(26,18,0,0.07); }
 
-  /* HOVER PREVIEW POPUP */
-  /* Preview stack container */
+  /* ─── PROJECT CARDS ─────────────────────────────────────── */
+  .proj-card {
+    background: rgba(26,18,0,0.06); border: 1px solid rgba(26,18,0,0.13);
+    border-radius: 0; padding: 13px 15px; margin-bottom: 8px;
+    cursor: pointer; transition: background 0.2s, transform 0.15s, border-color 0.2s;
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .proj-card:hover { background: rgba(26,18,0,0.12); transform: translateX(4px); border-color: rgba(26,18,0,0.28); }
+  .proj-card-title { font-family: 'Cormorant Garamond', serif; font-size: 14px; font-weight: 600; color: #1a1200; margin-bottom: 2px; }
+  .proj-card-meta { font-family: 'Courier Prime', monospace; font-size: 9px; color: #6a5200; letter-spacing: 0.08em; }
+  .proj-arrow { font-size: 16px; color: #4a3800; opacity: 0.5; font-family: 'Courier Prime', monospace; }
+
+  /* ─── HOVER PREVIEW STACK ───────────────────────────────── */
   #preview-stack {
-    position: fixed;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    pointer-events: none;
-    z-index: 9999;
-    top: 0; left: 0;
+    position: fixed; display: flex; flex-direction: column;
+    gap: 8px; pointer-events: none; z-index: 9999; top: 0; left: 0;
   }
   .pp-card {
-    width: 210px;
-    background: #0e0b00;
-    border: 1px solid rgba(224,197,143,0.18);
-    border-radius: 14px;
-    overflow: hidden;
-    opacity: 0;
-    transform: translateX(14px) scale(0.95);
-    transition: opacity 0.28s ease, transform 0.28s ease;
-    box-shadow: 0 16px 48px rgba(0,0,0,0.75);
+    width: 210px; background: #08060a;
+    border: 1px solid rgba(224,197,143,0.16);
+    border-radius: 0; overflow: hidden;
+    opacity: 0; transform: translateX(12px) scale(0.96);
+    transition: opacity 0.26s ease, transform 0.26s ease;
+    box-shadow: 0 12px 40px rgba(0,0,0,0.8);
   }
   .pp-card.show { opacity: 1; transform: translateX(0) scale(1); }
   .pp-card:nth-child(2) { transition-delay: 0.07s; }
   .pp-card:nth-child(3) { transition-delay: 0.14s; }
-  .pp-imgwrap { width:100%; height:110px; display:flex; align-items:center; justify-content:center; flex-direction:column; gap:5px; background: linear-gradient(135deg,#1e1600 0%,#2e2000 60%,#1a1200 100%); }
-  .pp-imgwrap img { width:100%; height:110px; object-fit:cover; display:block; }
-  .pp-icon { font-size:30px; line-height:1; }
-  .pp-sublabel { font-size:9px; letter-spacing:0.18em; color:rgba(224,197,143,0.3); text-transform:uppercase; }
-  .pp-body { padding:10px 12px 12px; }
-  .pp-label { font-size:9px; letter-spacing:0.15em; text-transform:uppercase; color:rgba(224,197,143,0.35); margin-bottom:3px; }
-  .pp-title { font-size:12px; font-weight:600; color:#E0C58F; margin-bottom:4px; line-height:1.3; }
-  .pp-desc { font-size:10.5px; color:rgba(224,197,143,0.5); line-height:1.5; margin-bottom:8px; }
-  .pp-tags { display:flex; flex-wrap:wrap; gap:3px; }
-  .pp-tag { font-size:9px; padding:2px 7px; border-radius:50px; background:rgba(224,197,143,0.07); border:1px solid rgba(224,197,143,0.16); color:rgba(224,197,143,0.5); }
+  .pp-imgwrap {
+    width: 100%; height: 90px;
+    display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 4px;
+    background: linear-gradient(135deg,#110e00 0%,#201600 60%,#0e0900 100%);
+  }
+  .pp-icon { font-size: 26px; line-height: 1; }
+  .pp-sublabel { font-family: 'Courier Prime', monospace; font-size: 8px; letter-spacing: 0.22em; color: rgba(224,197,143,0.25); text-transform: uppercase; }
+  .pp-body { padding: 10px 12px 12px; }
+  .pp-title { font-family: 'Cormorant Garamond', serif; font-size: 13px; font-weight: 600; color: #E0C58F; margin-bottom: 4px; }
+  .pp-desc { font-family: 'Courier Prime', monospace; font-size: 10px; color: rgba(224,197,143,0.45); line-height: 1.5; margin-bottom: 7px; }
+  .pp-tags { display: flex; flex-wrap: wrap; gap: 3px; }
+  .pp-tag { font-family: 'Courier Prime', monospace; font-size: 8.5px; padding: 2px 6px; border-radius: 0; background: rgba(224,197,143,0.06); border: 1px solid rgba(224,197,143,0.15); color: rgba(224,197,143,0.45); }
 </style>
 </head>
 <body>
-<div id="loading"><div class="ring"></div><span id="ltxt">Loading Earth…</span></div>
+
+<!-- CANVAS (shared background) -->
 <canvas id="c"></canvas>
 
-<div id="ui">
-  <h1>Jeyasri Sundar</h1>
-  <p id="ui-hint">Drag to rotate &nbsp;·&nbsp; Scroll to zoom</p>
-  <button id="plane-btn" onclick="startJourney()">
-    <span class="plane-icon">✈</span>
-    <span class="btn-label">Start Journey</span>
-  </button>
+<!-- ─── INTRO SCREEN ──────────────────────────────── -->
+<div id="intro-screen">
+  <div class="intro-corner-tl">Portfolio · 2026</div>
+  <div class="intro-name">Hey!<br><em>I'm Jeyasri Sundar</em></div>
+
+  <div class="intro-tagline">ML Engineer &nbsp;·&nbsp; Data Scientist &nbsp;·&nbsp; Full-Stack Builder</div>
+  <button class="intro-btn" onclick="enterGlobe()">Enter Portfolio ↗</button>
+  <div class="intro-corner">Sydney, Australia</div>
 </div>
-<div id="coords">LAT —°&nbsp; LON —°</div>
+
+<!-- ─── LOADING (shown while globe textures load) ─── -->
+<div id="loading"><div class="ring"></div><span id="ltxt">Loading Earth…</span></div>
+
+<!-- ─── GLOBE UI LAYER ────────────────────────────── -->
+<div id="globe-ui">
+  <div id="ui">
+    <h1>Jeyasri<br>Sundar</h1>
+    <p id="ui-hint">Drag to rotate &nbsp;·&nbsp; Scroll to zoom</p>
+    <div style="display:flex;align-items:center;gap:14px;margin-top:14px;">
+      <button id="plane-btn" onclick="startJourney()" style="margin-top:0;">
+        <span>✈</span>
+        <span>Start Journey</span>
+      </button>
+      <div id="journey-hint">
+        <span style="font-family:'Courier Prime',monospace;font-size:9px;letter-spacing:0.3em;text-transform:uppercase;color:rgba(224,197,143,0.5);display:block;margin-bottom:3px;">click here</span>
+        <span style="font-size:14px;color:rgba(224,197,143,0.5);display:block;">←</span>
+      </div>
+    </div>
+  </div>
+  <div id="coords">LAT —° &nbsp; LON —°</div>
+</div>
 
 <!-- Day/Night Toggle -->
-<button id="daynight-btn" onclick="toggleDayNight()">
+<button id="daynight-btn" onclick="toggleDayNight()" style="display:none;">
   <span class="dn-icon">☀️</span>
   <span class="dn-label">Day</span>
 </button>
 
-<!-- Top Navbar -->
+<!-- Left Vertical Navbar -->
 <nav id="top-nav">
   <div class="nav-item" id="nav-about"    onclick="navTo('india')"    ><span class="nav-dot"></span>About</div>
   <div class="nav-item" id="nav-projects" onclick="navTo('thailand')" ><span class="nav-dot"></span>Projects</div>
@@ -192,7 +424,7 @@
 
   <!-- 1 India About -->
   <div class="modal-card active" id="card-india">
-    <button class="close-btn" onclick="closeModal()">×</button>
+    <button class="close-btn" onclick="closeModal()">✕</button>
     <div class="loc-badge">📍 Chennai, India</div>
     <h2>Jeyasri Sundar</h2>
     <div class="subtitle">Advanced Computing Student · University of Sydney</div>
@@ -208,7 +440,7 @@
 
   <!-- 2 Thailand Projects -->
   <div class="modal-card" id="card-thailand">
-    <button class="close-btn" onclick="closeModal()">×</button>
+    <button class="close-btn" onclick="closeModal()">✕</button>
     <div class="loc-badge">📍 Thailand</div>
     <h2>Projects</h2>
     <div class="subtitle">Things I've built — hover to preview, click to explore</div>
@@ -237,7 +469,7 @@
 
   <!-- 2a Matcha -->
   <div class="modal-card" id="proj-matcha">
-    <button class="close-btn" onclick="closeModal()">×</button>
+    <button class="close-btn" onclick="closeModal()">✕</button>
     <button class="back-btn" onclick="backToProjects()">← Projects</button>
     <div class="loc-badge">📍 Thailand</div>
     <h2>Matcha Match</h2>
@@ -257,7 +489,7 @@
 
   <!-- 2b Cricket -->
   <div class="modal-card" id="proj-cricket">
-    <button class="close-btn" onclick="closeModal()">×</button>
+    <button class="close-btn" onclick="closeModal()">✕</button>
     <button class="back-btn" onclick="backToProjects()">← Projects</button>
     <div class="loc-badge">📍 Thailand</div>
     <h2>Cricket Analysis &amp; Predictor</h2>
@@ -277,7 +509,7 @@
 
   <!-- 2c Sydney suburbs -->
   <div class="modal-card" id="proj-sydney">
-    <button class="close-btn" onclick="closeModal()">×</button>
+    <button class="close-btn" onclick="closeModal()">✕</button>
     <button class="back-btn" onclick="backToProjects()">← Projects</button>
     <div class="loc-badge">📍 Thailand</div>
     <h2>Sydney Suburb Development Analysis</h2>
@@ -296,7 +528,7 @@
 
   <!-- 3 China Experience -->
   <div class="modal-card" id="card-china">
-    <button class="close-btn" onclick="closeModal()">×</button>
+    <button class="close-btn" onclick="closeModal()">✕</button>
     <div class="loc-badge">📍 China</div>
     <h2>Experience</h2>
     <div class="subtitle">Where I've worked</div>
@@ -339,7 +571,7 @@
 
   <!-- 4 Indonesia Skills -->
   <div class="modal-card" id="card-indonesia">
-    <button class="close-btn" onclick="closeModal()">×</button>
+    <button class="close-btn" onclick="closeModal()">✕</button>
     <div class="loc-badge">📍 Indonesia</div>
     <h2>Skills</h2>
     <div class="subtitle">Tools &amp; technologies I work with</div>
@@ -360,7 +592,7 @@
 
   <!-- 5 Sydney Contact -->
   <div class="modal-card" id="card-sydney">
-    <button class="close-btn" onclick="closeModal()">×</button>
+    <button class="close-btn" onclick="closeModal()">✕</button>
     <div class="loc-badge">📍 Sydney, Australia</div>
     <h2>Get in Touch</h2>
     <div class="subtitle">Based in Sydney · Open to opportunities</div>
@@ -382,115 +614,110 @@
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script>
-const ltxt = document.getElementById('ltxt');
-const loadingEl = document.getElementById('loading');
-const flightStatus = document.getElementById('flight-status');
-const flightText = document.getElementById('flight-text');
-const planBtn = document.getElementById('plane-btn');
-const modalOverlay = document.getElementById('modal-overlay');
-const uiHint = document.getElementById('ui-hint');
-const topNav = document.getElementById('top-nav');
+// ─── DOM refs ───────────────────────────────────────────────
+const ltxt        = document.getElementById('ltxt');
+const loadingEl   = document.getElementById('loading');
+const flightStatus= document.getElementById('flight-status');
+const flightText  = document.getElementById('flight-text');
+const planBtn     = document.getElementById('plane-btn');
+const modalOverlay= document.getElementById('modal-overlay');
+const uiHint      = document.getElementById('ui-hint');
+const topNav      = document.getElementById('top-nav');
+const introScreen = document.getElementById('intro-screen');
+const globeUI     = document.getElementById('globe-ui');
+const daynightBtn = document.getElementById('daynight-btn');
 
 let isNightMode = false;
-let dayTexture = null;
-let nightTexture = null;
+let dayTexture = null, nightTexture = null;
+let globeReady = false;   // true once Three.js globe is loaded
+let introDone  = false;   // true once user clicks Enter Portfolio
 
+// ─── THREE.JS SETUP ─────────────────────────────────────────
 const renderer = new THREE.WebGLRenderer({canvas:document.getElementById('c'),antialias:true});
 renderer.setSize(innerWidth,innerHeight);
 renderer.setPixelRatio(Math.min(devicePixelRatio,2));
-renderer.setClearColor(0x050a14, 1);
+renderer.setClearColor(0x050a14,1);
 const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera(45,innerWidth/innerHeight,0.1,1000);
-camera.position.z = 8;
+camera.position.z = 40; // far enough that globe is invisible on intro
 
-// Star field — 3 layers for depth and brightness
-const starLayers = [
-  {count:12000, spread:600, color:0xffffff,  size:0.18, opacity:0.9},  // dense tiny white
-  {count:3000,  spread:500, color:0xffeef5,  size:0.38, opacity:0.75}, // mid warm pink-white
-  {count:800,   spread:400, color:0xff99bb,  size:0.7,  opacity:0.55}, // large rosy glows
+// Starfield — 3 layers (always rendered; visible through intro bg via canvas z-index = 0)
+const starLayers=[
+  {count:12000,spread:600,color:0xffffff, size:0.18,opacity:0.9},
+  {count:3000, spread:500,color:0xffeef5, size:0.38,opacity:0.75},
+  {count:800,  spread:400,color:0xff99bb, size:0.7, opacity:0.55},
 ];
 starLayers.forEach(({count,spread,color,size,opacity})=>{
-  const geo = new THREE.BufferGeometry();
-  const pos = [];
+  const geo=new THREE.BufferGeometry(),pos=[];
   for(let i=0;i<count;i++) pos.push((Math.random()-.5)*spread,(Math.random()-.5)*spread,(Math.random()-.5)*spread);
   geo.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));
   scene.add(new THREE.Points(geo,new THREE.PointsMaterial({color,size,transparent:true,opacity,sizeAttenuation:true})));
 });
-// Keep references for day/night toggling
-const dayStarMats = scene.children.filter(c=>c.isPoints).map(c=>c.material);
+const dayStarMats=scene.children.filter(c=>c.isPoints).map(c=>c.material);
 
-const sunLight = new THREE.DirectionalLight(0xfff8e8,1.5); sunLight.position.set(5,3,4); scene.add(sunLight);
-const ambLight = new THREE.AmbientLight(0xffe0ec,0.7); scene.add(ambLight);
-const rim = new THREE.DirectionalLight(0x1a3366,0.3); rim.position.set(-4,-2,-5); scene.add(rim);
+const sunLight=new THREE.DirectionalLight(0xfff8e8,1.5); sunLight.position.set(5,3,4); scene.add(sunLight);
+const ambLight=new THREE.AmbientLight(0xffe0ec,0.7); scene.add(ambLight);
+const rim=new THREE.DirectionalLight(0x1a3366,0.3); rim.position.set(-4,-2,-5); scene.add(rim);
 
-const loader = new THREE.TextureLoader();
-loader.crossOrigin='anonymous';
-const sphereGeo = new THREE.SphereGeometry(1,64,64);
+const loader=new THREE.TextureLoader(); loader.crossOrigin='anonymous';
+const sphereGeo=new THREE.SphereGeometry(1,64,64);
 
 function addAtmosphere(){
   scene.add(new THREE.Mesh(new THREE.SphereGeometry(1.02,64,64),new THREE.MeshPhongMaterial({color:0x3399ff,transparent:true,opacity:0.06,side:THREE.FrontSide})));
   scene.add(new THREE.Mesh(new THREE.SphereGeometry(1.08,64,64),new THREE.MeshPhongMaterial({color:0x1155cc,transparent:true,opacity:0.04,side:THREE.BackSide})));
 }
 
-function done(){
+// Called when globe textures are loaded
+function globeLoaded(){
+  globeReady=true;
   loadingEl.style.opacity='0';
-  setTimeout(()=>{
-    loadingEl.style.display='none';
-    frozen=true;tweening=true;
-    startTween({fromRotX:rotX,fromRotY:rotY,fromZoom:8,toRotX:rotX,toRotY:rotY,toZoom:2.8,duration:2200,onDone:()=>{frozen=false;introPlaying=false;}});
-  },1000);
+  setTimeout(()=>{ loadingEl.style.display='none'; },900);
+  // If user already clicked Enter, transition immediately
+  if(introDone) showGlobeUI();
+}
+
+// Called when user clicks Enter Portfolio
+function enterGlobe(){
+  introDone=true;
+  introScreen.classList.add('fade-out');
+  setTimeout(()=>{ introScreen.style.display='none'; },900);
+  if(globeReady) showGlobeUI();
+  // else showGlobeUI() will be called from globeLoaded()
+}
+
+function showGlobeUI(){
+  globeUI.classList.add('visible');
+  daynightBtn.style.display='flex';
+  // Zoom the globe in
+  frozen=true; tweening=true;
+  startTween({fromRotX:rotX,fromRotY:rotY,fromZoom:40,toRotX:rotX,toRotY:rotY,toZoom:2.8,
+    duration:2200,onDone:()=>{frozen=false;introPlaying=false;}});
 }
 
 function applyTheme(mode){
-  const isN = mode === 'night';
-  const h1 = document.querySelector('#ui h1');
-  const hint = document.querySelector('#ui p');
-  const coords = document.getElementById('coords');
-  const nav = document.getElementById('top-nav');
-  const dnBtn = document.getElementById('daynight-btn');
-  const planeBtn = document.getElementById('plane-btn');
+  const isN=mode==='night';
+  const h1=document.querySelector('#ui h1');
+  const hint=document.querySelector('#ui p');
+  const coords=document.getElementById('coords');
+  const nav=document.getElementById('top-nav');
+  const dnBtn=document.getElementById('daynight-btn');
+  const pb=document.getElementById('plane-btn');
   if(isN){
-    if(h1){ h1.style.color='rgba(255,220,235,0.92)'; }
-    if(hint){ hint.style.color='rgba(255,200,220,0.45)'; }
-    if(coords){ coords.style.color='rgba(255,200,220,0.35)'; }
-    if(nav){
-      nav.style.background='rgba(5,10,20,0.7)';
-      nav.style.borderColor='rgba(224,197,143,0.2)';
-    }
-    document.querySelectorAll('.nav-item').forEach(n=>{
-      n.style.color='rgba(224,197,143,0.6)';
-    });
-    if(dnBtn){
-      dnBtn.style.background='rgba(5,10,20,0.7)';
-      dnBtn.style.borderColor='rgba(255,255,255,0.18)';
-      dnBtn.style.color='rgba(255,255,255,0.75)';
-    }
-    if(planeBtn){
-      planeBtn.style.background='rgba(255,255,255,0.08)';
-      planeBtn.style.borderColor='rgba(255,255,255,0.18)';
-      planeBtn.style.color='#fff';
-    }
+    if(h1) h1.style.color='rgba(255,220,235,0.92)';
+    if(hint) hint.style.color='rgba(255,200,220,0.4)';
+    if(coords) coords.style.color='rgba(255,200,220,0.3)';
+    if(nav){ nav.style.background='rgba(5,10,20,0.85)'; nav.style.borderColor='rgba(224,197,143,0.15)'; }
+    document.querySelectorAll('.nav-item').forEach(n=>n.style.color='rgba(224,197,143,0.55)');
+    if(dnBtn){ dnBtn.style.background='rgba(5,10,20,0.8)'; dnBtn.style.borderColor='rgba(255,255,255,0.15)'; dnBtn.style.color='rgba(255,255,255,0.7)'; }
+    if(pb){ pb.style.background='rgba(255,255,255,0.06)'; pb.style.borderColor='rgba(255,255,255,0.18)'; pb.style.color='#fff'; }
   } else {
-    if(h1){ h1.style.color='rgba(255,210,225,0.95)'; }
-    if(hint){ hint.style.color='rgba(255,180,210,0.5)'; }
-    if(coords){ coords.style.color='rgba(255,180,210,0.4)'; }
-    if(nav){
-      nav.style.background='rgba(255,180,210,0.1)';
-      nav.style.borderColor='rgba(255,160,200,0.25)';
-    }
-    document.querySelectorAll('.nav-item').forEach(n=>{
-      n.style.color='rgba(255,190,215,0.7)';
-    });
-    if(dnBtn){
-      dnBtn.style.background='rgba(255,180,210,0.1)';
-      dnBtn.style.borderColor='rgba(255,160,200,0.25)';
-      dnBtn.style.color='rgba(255,210,230,0.85)';
-    }
-    if(planeBtn){
-      planeBtn.style.background='rgba(255,180,210,0.1)';
-      planeBtn.style.borderColor='rgba(255,160,200,0.3)';
-      planeBtn.style.color='rgba(255,210,230,0.9)';
-    }
+    if(h1) h1.style.color='rgba(255,210,225,0.9)';
+    if(hint) hint.style.color='rgba(255,180,210,0.4)';
+    if(coords) coords.style.color='rgba(255,180,210,0.35)';
+    if(nav){ nav.style.background='rgba(5,10,20,0.7)'; nav.style.borderColor='rgba(224,197,143,0.15)'; }
+    document.querySelectorAll('.nav-item').forEach(n=>n.style.color='rgba(255,190,215,0.55)');
+    if(dnBtn){ dnBtn.style.background='rgba(5,10,20,0.6)'; dnBtn.style.borderColor='rgba(224,197,143,0.2)'; dnBtn.style.color='rgba(224,197,143,0.8)'; }
+    if(pb){ pb.style.background='rgba(224,197,143,0.08)'; pb.style.borderColor='rgba(224,197,143,0.35)'; pb.style.color='rgba(224,197,143,0.85)'; }
   }
 }
 
@@ -500,43 +727,33 @@ function toggleDayNight(){
   const icon=btn.querySelector('.dn-icon');
   const label=btn.querySelector('.dn-label');
   const globe=scene.getObjectByName('globe');
-  if(!globe)return;
+  if(!globe) return;
   if(isNightMode){
     icon.textContent='🌙'; label.textContent='Night';
-    document.body.style.background='#050a14';
     renderer.setClearColor(0x050a14,1);
-    // Dimmer night stars (city lights = main light source)
     dayStarMats.forEach((m,i)=>{ m.opacity=[0.35,0.25,0.18][i]||0.3; m.needsUpdate=true; });
     applyTheme('night');
-    sunLight.intensity=0.25;
-    ambLight.intensity=1.4;
+    sunLight.intensity=0.25; ambLight.intensity=1.4;
     const applyNight=(tex)=>{
-      globe.material.map=tex;
-      globe.material.emissiveMap=tex;
+      globe.material.map=tex; globe.material.emissiveMap=tex;
       globe.material.emissive=new THREE.Color(0x221f11);
-      globe.material.emissiveIntensity=0.6;
-      globe.material.shininess=8;
+      globe.material.emissiveIntensity=0.6; globe.material.shininess=8;
       globe.material.needsUpdate=true;
       const clouds=scene.getObjectByName('clouds');
       if(clouds) clouds.material.opacity=0.12;
     };
-    if(nightTexture){applyNight(nightTexture);}
-    else{loader.load('https://unpkg.com/three-globe/example/img/earth-night.jpg',(t)=>{nightTexture=t;applyNight(t);},undefined,()=>{});}
+    if(nightTexture){ applyNight(nightTexture); }
+    else{ loader.load('https://unpkg.com/three-globe/example/img/earth-night.jpg',(t)=>{ nightTexture=t; applyNight(t); },undefined,()=>{}); }
   } else {
     icon.textContent='☀️'; label.textContent='Day';
-    document.body.style.background='#050a14';
     renderer.setClearColor(0x050a14,1);
-    // Bright day stars
     dayStarMats.forEach((m,i)=>{ m.opacity=[0.9,0.75,0.55][i]||0.7; m.needsUpdate=true; });
     applyTheme('day');
-    sunLight.intensity=1.5;
-    ambLight.intensity=0.6;
+    sunLight.intensity=1.5; ambLight.intensity=0.6;
     if(dayTexture){
-      globe.material.map=dayTexture;
-      globe.material.emissiveMap=null;
+      globe.material.map=dayTexture; globe.material.emissiveMap=null;
       globe.material.emissive=new THREE.Color(0x000000);
-      globe.material.emissiveIntensity=0;
-      globe.material.shininess=22;
+      globe.material.emissiveIntensity=0; globe.material.shininess=22;
       globe.material.needsUpdate=true;
       const clouds=scene.getObjectByName('clouds');
       if(clouds) clouds.material.opacity=0.38;
@@ -544,6 +761,7 @@ function toggleDayNight(){
   }
 }
 
+// ─── GLOBE LOADING ──────────────────────────────────────────
 const sources=['https://unpkg.com/three-globe/example/img/earth-blue-marble.jpg','https://cdn.jsdelivr.net/npm/three-globe/example/img/earth-blue-marble.jpg'];
 let tried=0;
 function tryLoad(src){
@@ -558,19 +776,19 @@ function tryLoad(src){
         const clouds=new THREE.Mesh(new THREE.SphereGeometry(1.006,64,64),new THREE.MeshPhongMaterial({map:cloudTex,transparent:true,opacity:0.38,depthWrite:false}));
         clouds.name='clouds'; scene.add(clouds);
       },undefined,()=>{});
-      addAtmosphere(); done();
+      addAtmosphere(); globeLoaded();
     },undefined,()=>{
       const mat=new THREE.MeshPhongMaterial({map:tex,specular:new THREE.Color(0x2255aa),shininess:22});
       const globe=new THREE.Mesh(sphereGeo,mat); globe.name='globe'; scene.add(globe);
-      addAtmosphere(); done();
+      addAtmosphere(); globeLoaded();
     });
-  },(e)=>{ltxt.textContent=`Loaded ${Math.round((e.loaded/e.total||0)*100)}%`;}
-  ,()=>{tried++;if(tried<sources.length){tryLoad(sources[tried]);}else{useCanvasFallback();}});
+  },(e)=>{ ltxt.textContent=`Loaded ${Math.round((e.loaded/e.total||0)*100)}%`; },
+  ()=>{ tried++; if(tried<sources.length){ tryLoad(sources[tried]); } else { useCanvasFallback(); } });
 }
 
 function useCanvasFallback(){
-  const W=2048,H=1024;
-  const cv=document.createElement('canvas'); cv.width=W; cv.height=H;
+  const W=2048,H=1024,cv=document.createElement('canvas');
+  cv.width=W; cv.height=H;
   const ctx=cv.getContext('2d');
   ctx.fillStyle='#0a1e3c'; ctx.fillRect(0,0,W,H);
   function ll(lon,lat){return[(lon+180)/360*W,(90-lat)/180*H];}
@@ -578,48 +796,49 @@ function useCanvasFallback(){
   poly([[-168,72],[-145,72],[-130,70],[-120,72],[-100,75],[-80,73],[-65,68],[-60,62],[-52,46],[-55,44],[-66,44],[-70,42],[-74,40],[-76,35],[-80,25],[-85,29],[-90,28],[-97,25],[-105,22],[-110,24],[-115,30],[-120,34],[-124,37],[-124,49],[-130,55],[-140,58],[-152,60],[-160,58],[-165,62],[-168,66]]);
   poly([[-6,36],[2,36],[10,38],[16,38],[24,38],[32,32],[36,28],[38,22],[42,12],[44,10],[42,2],[40,-2],[38,-8],[36,-16],[32,-26],[28,-34],[20,-36],[16,-34],[12,-28],[10,-20],[8,-5],[2,4],[0,8],[-4,10],[-10,8],[-16,10],[-18,16],[-14,22],[-8,28],[-4,32]]);
   poly([[-180,-66],[-120,-62],[-60,-64],[0,-66],[30,-68],[60,-64],[90,-66],[120,-62],[150,-64],[180,-66],[180,-90],[-180,-90]],'#c8ddf0');
-  const tex=new THREE.CanvasTexture(cv);
-  dayTexture=tex;
+  const tex=new THREE.CanvasTexture(cv); dayTexture=tex;
   const mat=new THREE.MeshPhongMaterial({map:tex,specular:new THREE.Color(0x224466),shininess:15});
   const globe=new THREE.Mesh(sphereGeo,mat); globe.name='globe'; scene.add(globe);
-  addAtmosphere(); done();
+  addAtmosphere(); globeLoaded();
 }
 
 tryLoad(sources[0]);
 
+// ─── GLOBE STATE ─────────────────────────────────────────────
 let isDragging=false,prevX=0,prevY=0;
 let rotX=0.3,rotY=0,velX=0,velY=0;
-let targetZoom=2.8,currentZoom=8;
+let targetZoom=40,currentZoom=40;
 let introPlaying=true,frozen=false,tweening=false,journeyStarted=false;
 
 const STOPS={
-  india:    {lon:80, lat:20, label:'Flying to India…',    card:'card-india',    zoom:1.72,nav:'nav-about'},
-  thailand: {lon:101,lat:15, label:'Flying to Thailand…', card:'card-thailand', zoom:1.72,nav:'nav-projects'},
-  china:    {lon:104,lat:35, label:'Flying to China…',    card:'card-china',    zoom:1.72,nav:'nav-exp'},
-  indonesia:{lon:118,lat:-2, label:'Flying to Indonesia…',card:'card-indonesia',zoom:1.72,nav:'nav-skills'},
-  sydney:   {lon:151,lat:-34,label:'Flying to Sydney…',   card:'card-sydney',   zoom:1.72,nav:'nav-contact'},
+  india:    {lon:80, lat:20,  label:'Flying to India…',    card:'card-india',    zoom:1.72,nav:'nav-about'},
+  thailand: {lon:101,lat:15,  label:'Flying to Thailand…', card:'card-thailand', zoom:1.72,nav:'nav-projects'},
+  china:    {lon:104,lat:35,  label:'Flying to China…',    card:'card-china',    zoom:1.72,nav:'nav-exp'},
+  indonesia:{lon:118,lat:-2,  label:'Flying to Indonesia…',card:'card-indonesia',zoom:1.72,nav:'nav-skills'},
+  sydney:   {lon:151,lat:-34, label:'Flying to Sydney…',   card:'card-sydney',   zoom:1.72,nav:'nav-contact'},
 };
 
+// ─── PREVIEW STACK ───────────────────────────────────────────
 const PREVIEWS={
   matcha:[
-    {label:'Stack',      icon:'🏆', title:'Matcha Match',         desc:'2nd place at OpenxAI HackNode — full-stack LLM café recommender.',   tags:['React','TypeScript','Django']},
-    {label:'Intelligence',icon:'🤖',title:'NLP & LLM Engine',     desc:'Google Places + Ollama driving context-aware personalised picks.',    tags:['Ollama','NLP','REST API']},
-    {label:'Features',   icon:'🗺️', title:'Map & Streak Tracker', desc:'Interactive map view, streak-tracking calendar, real-time chatbot.',  tags:['Leaflet','Calendar UI','WebSocket']},
+    {label:'Stack',      icon:'🏆',title:'Matcha Match',       desc:'2nd place at OpenxAI HackNode — full-stack LLM café recommender.',  tags:['React','TypeScript','Django']},
+    {label:'Intelligence',icon:'🤖',title:'NLP & LLM Engine',  desc:'Google Places + Ollama driving context-aware personalised picks.',  tags:['Ollama','NLP','REST API']},
+    {label:'Features',   icon:'🗺️',title:'Map & Streak Tracker',desc:'Interactive map view, streak-tracking calendar, real-time chatbot.',tags:['Leaflet','Calendar UI','WebSocket']},
   ],
   cricket:[
-    {label:'Data',       icon:'🏏', title:'Cricket Predictor',    desc:'ML win predictor on 900K+ rows of ball-by-ball match data.',          tags:['Python','Pandas','Weather API']},
-    {label:'Models',     icon:'📈', title:'LSTM & ELO Rating',    desc:'Sequential LSTM model plus ELO-based team strength estimation.',       tags:['PyTorch','LSTM','ELO']},
-    {label:'Research',   icon:'🎓', title:'Faculty Supervised',   desc:'Supervised by USYD faculty, partnered with StatsPerform.',            tags:['StatsPerform','USYD','Research']},
+    {label:'Data',   icon:'🏏',title:'Cricket Predictor',  desc:'ML win predictor on 900K+ rows of ball-by-ball match data.',   tags:['Python','Pandas','Weather API']},
+    {label:'Models', icon:'📈',title:'LSTM & ELO Rating',  desc:'Sequential LSTM model plus ELO-based team strength estimation.',tags:['PyTorch','LSTM','ELO']},
+    {label:'Research',icon:'🎓',title:'Faculty Supervised',desc:'Supervised by USYD faculty, partnered with StatsPerform.',     tags:['StatsPerform','USYD','Research']},
   ],
   sydproj:[
-    {label:'Spatial DB', icon:'🏙️', title:'Sydney Suburbs',       desc:'PostgreSQL/PostGIS database integrating NSW POI API & ABS data.',     tags:['PostgreSQL','PostGIS','NSW API']},
-    {label:'Modelling',  icon:'📊', title:'Regression Analysis',  desc:'Regression models identifying income inequality predictors.',          tags:['Scikit-learn','XGBoost','SHAP']},
-    {label:'Insight',    icon:'🗺️', title:'Geospatial Insight',   desc:'ArcGIS Pro visualisations across Sydney\u2019s 300+ suburbs.',            tags:['ArcGIS Pro','GIS','Choropleth']},
+    {label:'Spatial DB',icon:'🏙️',title:'Sydney Suburbs',     desc:'PostgreSQL/PostGIS database integrating NSW POI API & ABS data.',   tags:['PostgreSQL','PostGIS','NSW API']},
+    {label:'Modelling', icon:'📊',title:'Regression Analysis', desc:'Regression models identifying income inequality predictors.',        tags:['Scikit-learn','XGBoost','SHAP']},
+    {label:'Insight',   icon:'🗺️',title:'Geospatial Insight',  desc:'ArcGIS Pro visualisations across Sydney\'s 300+ suburbs.',          tags:['ArcGIS Pro','GIS','Choropleth']},
   ],
 };
 
 const previewStack=document.getElementById('preview-stack');
-let previewTimeout=null;
+let previewTimeout=null, currentPreviewKey='';
 
 function buildCard(item){
   return `<div class="pp-card">
@@ -632,65 +851,57 @@ function buildCard(item){
   </div>`;
 }
 
-function showPreview(e,key){
+function showPreviewKeyed(e,key){
+  currentPreviewKey=key;
   const items=PREVIEWS[key]; if(!items) return;
   clearTimeout(previewTimeout);
   previewStack.innerHTML=items.map(buildCard).join('');
   positionStack(e);
-  // stagger show class
   const cards=previewStack.querySelectorAll('.pp-card');
-  cards.forEach((c,i)=>{ setTimeout(()=>c.classList.add('show'),i*70); });
+  cards.forEach((c,i)=>setTimeout(()=>c.classList.add('show'),i*70));
 }
 
 function hidePreview(){
   clearTimeout(previewTimeout);
-  const cards=previewStack.querySelectorAll('.pp-card');
-  cards.forEach(c=>c.classList.remove('show'));
+  previewStack.querySelectorAll('.pp-card').forEach(c=>c.classList.remove('show'));
   previewTimeout=setTimeout(()=>{ previewStack.innerHTML=''; },350);
 }
 
 function positionStack(e){
-  // Place to the right of the modal card. Find modal's right edge.
   const modal=document.querySelector('.modal-card.active');
-  let x, y;
+  let x,y;
+  const items=PREVIEWS[currentPreviewKey]||[];
   if(modal){
     const r=modal.getBoundingClientRect();
-    x=r.right+16;
-    // If would overflow right edge, flip to left
-    if(x+220>window.innerWidth) x=r.left-220-16;
-    y=r.top + (r.height/2) - (PREVIEWS[currentPreviewKey]||[]).length*100;
-    y=Math.max(12, Math.min(window.innerHeight - (PREVIEWS[currentPreviewKey]||[]).length*160 - 12, y));
+    x=r.right+14;
+    if(x+220>window.innerWidth) x=r.left-220-14;
+    y=r.top+(r.height/2)-items.length*55;
+    y=Math.max(12,Math.min(window.innerHeight-items.length*140-12,y));
   } else {
-    x=e.clientX+20; y=e.clientY-80;
+    x=e.clientX+16; y=e.clientY-60;
   }
   previewStack.style.left=x+'px';
   previewStack.style.top=y+'px';
 }
 
-let currentPreviewKey='';
-function showPreviewKeyed(e,key){
-  currentPreviewKey=key;
-  showPreview(e,key);
-}
-
-function movePreview(e){ /* position is fixed on enter, no mouse tracking needed */ }
-
-function geoToRot(lon,lat){return{rotYTarget:(-lon*Math.PI/180)+Math.PI*1.5,rotXTarget:(lat*Math.PI/180)};}
-function easeInOut(t){return t<0.5?2*t*t:-1+(4-2*t)*t;}
+// ─── TWEEN ───────────────────────────────────────────────────
+function geoToRot(lon,lat){ return {rotYTarget:(-lon*Math.PI/180)+Math.PI*1.5, rotXTarget:(lat*Math.PI/180)}; }
+function easeInOut(t){ return t<0.5?2*t*t:-1+(4-2*t)*t; }
 let tweenObj=null;
-function startTween(p){tweenObj={...p,startTime:performance.now()};}
+function startTween(p){ tweenObj={...p,startTime:performance.now()}; }
 function updateTween(now){
-  if(!tweenObj)return;
-  const el=now-tweenObj.startTime,t=easeInOut(Math.min(el/tweenObj.duration,1));
+  if(!tweenObj) return;
+  const el=now-tweenObj.startTime, t=easeInOut(Math.min(el/tweenObj.duration,1));
   rotX=tweenObj.fromRotX+(tweenObj.toRotX-tweenObj.fromRotX)*t;
   rotY=tweenObj.fromRotY+(tweenObj.toRotY-tweenObj.fromRotY)*t;
   targetZoom=currentZoom=tweenObj.fromZoom+(tweenObj.toZoom-tweenObj.fromZoom)*t;
   if(el>=tweenObj.duration){
-    rotX=tweenObj.toRotX;rotY=tweenObj.toRotY;targetZoom=currentZoom=tweenObj.toZoom;
-    const cb=tweenObj.onDone;tweenObj=null;tweening=false;if(cb)cb();
+    rotX=tweenObj.toRotX; rotY=tweenObj.toRotY; targetZoom=currentZoom=tweenObj.toZoom;
+    const cb=tweenObj.onDone; tweenObj=null; tweening=false; if(cb) cb();
   }
 }
 
+// ─── NAVIGATION ──────────────────────────────────────────────
 function setActiveNav(id){
   document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
   if(id) document.getElementById(id).classList.add('active');
@@ -703,8 +914,10 @@ function showCard(key){
   setActiveNav(s.nav);
 }
 function startJourney(){
-  frozen=true;tweening=true;velX=0;velY=0;journeyStarted=true;
+  frozen=true; tweening=true; velX=0; velY=0; journeyStarted=true;
   planBtn.classList.add('hidden');
+  const hint=document.getElementById('journey-hint');
+  if(hint) hint.style.display='none';
   uiHint.style.opacity='0';
   topNav.classList.add('visible');
   flyTo('india');
@@ -715,14 +928,14 @@ function flyTo(key){
   const s=STOPS[key];
   flightText.textContent=s.label;
   flightStatus.classList.add('visible');
-  frozen=true;tweening=true;
+  frozen=true; tweening=true;
   const{rotYTarget,rotXTarget}=geoToRot(s.lon,s.lat);
   startTween({fromRotX:rotX,fromRotY:rotY,fromZoom:currentZoom,toRotX:rotXTarget,toRotY:rotYTarget,toZoom:s.zoom,
     duration:2400,
-    onDone:()=>{flightStatus.classList.remove('visible');setTimeout(()=>showCard(key),300);}});
+    onDone:()=>{ flightStatus.classList.remove('visible'); setTimeout(()=>showCard(key),300); }});
 }
 function navTo(key){
-  if(!journeyStarted){journeyStarted=true;planBtn.classList.add('hidden');uiHint.style.opacity='0';topNav.classList.add('visible');}
+  if(!journeyStarted){ journeyStarted=true; planBtn.classList.add('hidden'); uiHint.style.opacity='0'; topNav.classList.add('visible'); }
   flyTo(key);
 }
 function showProjectCard(id){
@@ -744,52 +957,53 @@ function resetJourney(){
   modalOverlay.classList.remove('visible');
   hidePreview();
   setActiveNav(null);
-  frozen=true;tweening=true;
+  frozen=true; tweening=true;
   startTween({fromRotX:rotX,fromRotY:rotY,fromZoom:currentZoom,toRotX:0.3,toRotY:0,toZoom:2.8,duration:2000,
     onDone:()=>{
-      frozen=false;journeyStarted=false;
+      frozen=false; journeyStarted=false;
       planBtn.classList.remove('hidden');
       uiHint.style.opacity='1';
-      // navbar intentionally stays visible after restart
     }});
 }
 
+// ─── INPUT ───────────────────────────────────────────────────
 const cvs=document.getElementById('c');
-cvs.addEventListener('mousedown',e=>{if(frozen||tweening)return;isDragging=true;prevX=e.clientX;prevY=e.clientY;velX=0;velY=0;});
-window.addEventListener('mouseup',()=>{isDragging=false;});
+cvs.addEventListener('mousedown',e=>{ if(frozen||tweening) return; isDragging=true; prevX=e.clientX; prevY=e.clientY; velX=0; velY=0; });
+window.addEventListener('mouseup',()=>{ isDragging=false; });
 window.addEventListener('mousemove',e=>{
-  if(!isDragging||frozen||tweening)return;
-  velX=(e.clientX-prevX)*0.004;velY=(e.clientY-prevY)*0.004;
-  rotY+=velX;rotX+=velY;rotX=Math.max(-Math.PI/2.2,Math.min(Math.PI/2.2,rotX));
-  prevX=e.clientX;prevY=e.clientY;
-  const lat=(-rotX*180/Math.PI).toFixed(1),lon=(((rotY*180/Math.PI)%360+540)%360-180).toFixed(1);
+  if(!isDragging||frozen||tweening) return;
+  velX=(e.clientX-prevX)*0.004; velY=(e.clientY-prevY)*0.004;
+  rotY+=velX; rotX+=velY; rotX=Math.max(-Math.PI/2.2,Math.min(Math.PI/2.2,rotX));
+  prevX=e.clientX; prevY=e.clientY;
+  const lat=(-rotX*180/Math.PI).toFixed(1), lon=(((rotY*180/Math.PI)%360+540)%360-180).toFixed(1);
   document.getElementById('coords').textContent=`LAT ${lat>0?'+':''}${lat}°   LON ${lon>0?'+':''}${lon}°`;
 });
-cvs.addEventListener('wheel',e=>{if(frozen||tweening)return;e.preventDefault();targetZoom=Math.max(1.3,Math.min(6,targetZoom+e.deltaY*0.004));},{passive:false});
-cvs.addEventListener('touchstart',e=>{if(frozen||tweening)return;const t=e.touches[0];isDragging=true;prevX=t.clientX;prevY=t.clientY;},{passive:true});
-window.addEventListener('touchend',()=>{isDragging=false;});
+cvs.addEventListener('wheel',e=>{ if(frozen||tweening) return; e.preventDefault(); targetZoom=Math.max(1.3,Math.min(6,targetZoom+e.deltaY*0.004)); },{passive:false});
+cvs.addEventListener('touchstart',e=>{ if(frozen||tweening) return; const t=e.touches[0]; isDragging=true; prevX=t.clientX; prevY=t.clientY; },{passive:true});
+window.addEventListener('touchend',()=>{ isDragging=false; });
 window.addEventListener('touchmove',e=>{
-  if(!isDragging||frozen||tweening)return;
-  const t=e.touches[0];velX=(t.clientX-prevX)*0.004;velY=(t.clientY-prevY)*0.004;
-  rotY+=velX;rotX+=velY;rotX=Math.max(-Math.PI/2.2,Math.min(Math.PI/2.2,rotX));
-  prevX=t.clientX;prevY=t.clientY;
+  if(!isDragging||frozen||tweening) return;
+  const t=e.touches[0]; velX=(t.clientX-prevX)*0.004; velY=(t.clientY-prevY)*0.004;
+  rotY+=velX; rotX+=velY; rotX=Math.max(-Math.PI/2.2,Math.min(Math.PI/2.2,rotX));
+  prevX=t.clientX; prevY=t.clientY;
 },{passive:true});
 
+// ─── RENDER LOOP ─────────────────────────────────────────────
 function animate(now){
   requestAnimationFrame(animate);
-  if(tweenObj){updateTween(now);}
+  if(tweenObj){ updateTween(now); }
   else if(!frozen&&!isDragging){
-    velX*=0.93;velY*=0.93;rotY+=velX;rotX+=velY;
-    if(Math.abs(velX)<0.0001&&Math.abs(velY)<0.0001)rotY+=0.0018;
+    velX*=0.93; velY*=0.93; rotY+=velX; rotX+=velY;
+    if(Math.abs(velX)<0.0001&&Math.abs(velY)<0.0001) rotY+=0.0018;
   }
-  const g=scene.getObjectByName('globe'),cl=scene.getObjectByName('clouds');
-  if(g){g.rotation.y=rotY;g.rotation.x=rotX;}
-  if(cl){cl.rotation.y=rotY+0.0003;cl.rotation.x=rotX;}
-  if(!tweenObj){currentZoom+=(targetZoom-currentZoom)*0.08;}
+  const g=scene.getObjectByName('globe'), cl=scene.getObjectByName('clouds');
+  if(g){ g.rotation.y=rotY; g.rotation.x=rotX; }
+  if(cl){ cl.rotation.y=rotY+0.0003; cl.rotation.x=rotX; }
+  if(!tweenObj){ currentZoom+=(targetZoom-currentZoom)*0.08; }
   camera.position.z=currentZoom;
   renderer.render(scene,camera);
 }
-window.addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight);});
+window.addEventListener('resize',()=>{ camera.aspect=innerWidth/innerHeight; camera.updateProjectionMatrix(); renderer.setSize(innerWidth,innerHeight); });
 animate(0);
 </script>
 </body>
