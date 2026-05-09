@@ -1,0 +1,753 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Jeyasri Sundar · Portfolio</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400..700;1,400..700&family=Playfair+Display:ital,wght@0,400..900;1,400..900&display=swap" rel="stylesheet">
+
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #050a14; overflow: hidden; width: 100vw; height: 100vh; font-family: Lora, sans-serif; }
+  canvas { display: block; }
+  #ui { position: fixed; top: 24px; left: 28px; color: rgba(255,255,255,0.85); pointer-events: none; z-index: 10; }
+  #ui h1 { font-size: 56px; font-weight: 100; letter-spacing: 0.22em; text-transform: uppercase; color: #FFB915; margin-bottom: 8px; line-height: 1; transition: color 0.4s; }
+  #ui p { font-size: 11px; letter-spacing: 0.12em; color: rgba(255,180,210,0.5); transition: opacity 0.5s, color 0.4s; margin-bottom: 14px; }
+  #coords { position: fixed; bottom: 24px; left: 28px; font-family: Lora, sans-serif; font-size: 12px; color: rgba(255,180,210,0.4); letter-spacing: 0.08em; pointer-events: none; z-index: 10; transition: color 0.4s; }
+  #loading { position: fixed; inset: 0; background: #050a14; display: flex; flex-direction: column; align-items: center; justify-content: center; color: rgba(255,220,230,0.6); font-size: 12px; letter-spacing: 0.2em; text-transform: uppercase; gap: 16px; z-index: 100; transition: opacity 1s; }
+  .ring { width: 40px; height: 40px; border: 1px solid rgba(255,255,255,0.12); border-top-color: rgba(255,220,235,0.8); border-radius: 50%; animation: spin 1s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* TOP NAV */
+  #top-nav {
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    flex-direction: row;
+    gap: 4px;
+    z-index: 60;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.5s, background 0.4s, border-color 0.4s;
+    background: rgba(255,180,210,0.1);
+    border: 1px solid rgba(255,160,200,0.25);
+    border-radius: 50px;
+    padding: 5px 7px;
+    backdrop-filter: blur(16px);
+    white-space: nowrap;
+  }
+  #top-nav.visible { opacity: 1; pointer-events: all; }
+  .nav-item {
+    display: flex; align-items: center; gap: 6px;
+    cursor: pointer; border-radius: 50px;
+    padding: 7px 15px;
+    color: rgba(255,190,215,0.7);
+    font-size: 11px; letter-spacing: 0.13em; text-transform: uppercase;
+    transition: background 0.2s, color 0.2s;
+  }
+  .nav-item:hover { background: rgba(255,180,210,0.15); color: rgba(255,220,240,0.95); }
+  .nav-item.active { background: rgba(255,180,210,0.2); color: rgba(255,230,245,1); }
+  .nav-dot { width: 5px; height: 5px; border-radius: 50%; background: currentColor; flex-shrink: 0; opacity: 0.7; }
+
+  /* DAY/NIGHT */
+  #daynight-btn {
+    position: fixed; top: 20px; right: 24px; z-index: 60;
+    background: rgba(255,180,210,0.1); border: 1px solid rgba(255,160,200,0.25);
+    border-radius: 50px; padding: 8px 16px;
+    color: #FFB915; font-size: 11px; letter-spacing: 0.15em; text-transform: uppercase;
+    cursor: pointer; display: flex; align-items: center; gap: 8px;
+    backdrop-filter: blur(16px);
+    transition: background 0.3s, border-color 0.3s, color 0.3s;
+    font-family: Lora, sans-serif;
+  }
+  #daynight-btn:hover { background: rgba(255,180,210,0.2); border-color: rgba(255,160,200,0.5); color:rgba(255,230,245,1); }
+  #daynight-btn .dn-icon { font-size: 15px; line-height:1; }
+
+  /* PLANE BTN */
+  #plane-btn { background: rgba(255,180,210,0.1); border: 1px solid rgba(255,160,200,0.3); color:rgba(255,210,230,0.9); border-radius:50px; padding:8px 18px; cursor:pointer; display:inline-flex; align-items:center; gap:8px; transition: background 0.3s, border-color 0.3s, color 0.3s, transform 0.15s; backdrop-filter:blur(8px); font-family:system-ui,sans-serif; pointer-events:all; }
+  #plane-btn:hover { background:rgba(255,180,210,0.2); border-color:rgba(255,160,200,0.55); color:rgba(255,235,248,1); transform:scale(1.05); }
+  #plane-btn .plane-icon { font-size:16px; line-height:1; }
+  #plane-btn .btn-label { font-size:11px; letter-spacing:0.18em; text-transform:uppercase; opacity:0.85; }
+  #plane-btn.hidden { opacity:0; pointer-events:none; }
+
+  /* FLIGHT STATUS */
+  #flight-status { position:fixed; bottom:32px; left:50%; transform:translateX(-50%); background:rgba(10,20,40,0.85); border:1px solid rgba(255,255,255,0.15); border-radius:50px; padding:8px 20px; color:rgba(255,255,255,0.8); font-size:12px; letter-spacing:0.15em; text-transform:uppercase; display:flex; align-items:center; gap:10px; backdrop-filter:blur(10px); opacity:0; transition:opacity 0.4s; pointer-events:none; z-index:50; }
+  #flight-status.visible { opacity:1; }
+  .pulse-dot { width:6px; height:6px; background:#E0C58F; border-radius:50%; animation:pulse 1.2s ease-in-out infinite; }
+  @keyframes pulse { 0%,100%{opacity:1;transform:scale(1);}50%{opacity:0.4;transform:scale(0.6);} }
+
+  /* MODAL */
+  #modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.55); display:flex; align-items:center; justify-content:center; z-index:200; opacity:0; pointer-events:none; transition:opacity 0.4s; backdrop-filter:blur(4px); }
+  #modal-overlay.visible { opacity:1; pointer-events:all; }
+  .modal-card { background:#E0C58F; border:1px solid rgba(255,255,255,0.22); border-radius:20px; padding:34px 38px; max-width:500px; width:92%; color:#1a1200; position:relative; display:none; max-height:88vh; overflow-y:auto; }
+  .modal-card.active { display:block; }
+  .modal-card h2 { font-size:25px; font-weight:600; letter-spacing:0.02em; margin-bottom:4px; color:#1a1200; }
+  .modal-card .subtitle { font-size:12.5px; color:#4a3800; letter-spacing:0.1em; margin-bottom:20px; }
+  .modal-card p { font-size:13.5px; line-height:1.78; color:#2a1f00; margin-bottom:10px; }
+  .modal-footer { display:flex; justify-content:space-between; align-items:center; margin-top:22px; }
+  .dot-row { display:flex; gap:6px; align-items:center; }
+  .dot { width:7px; height:7px; border-radius:50%; background:rgba(26,18,0,0.2); transition:background 0.3s; }
+  .dot.on { background:#1a1200; }
+  .close-btn { position:absolute; top:16px; right:20px; background:none; border:none; color:#4a3800; font-size:22px; cursor:pointer; line-height:1; transition:color 0.2s; }
+  .close-btn:hover { color:#1a1200; }
+  .loc-badge { display:inline-flex; align-items:center; gap:6px; border-radius:50px; padding:4px 14px; font-size:11px; letter-spacing:0.15em; text-transform:uppercase; margin-bottom:16px; border:1px solid rgba(26,18,0,0.25); background:rgba(26,18,0,0.08); color:#3a2800; }
+  .next-btn { border-radius:50px; padding:10px 22px; font-size:12.5px; letter-spacing:0.1em; cursor:pointer; display:flex; align-items:center; gap:8px; transition:background 0.2s,transform 0.15s; border:1.5px solid rgba(26,18,0,0.5); background:#1a1200; font-family:system-ui,sans-serif; white-space:nowrap; color:#E0C58F; font-weight:500; }
+  .next-btn:hover { background:#2e2000; transform:translateY(-1px); }
+  .tag-row { display:flex; flex-wrap:wrap; gap:6px; margin-top:5px; margin-bottom:14px; }
+  .tag { font-size:11px; padding:3px 10px; border-radius:50px; border:1px solid rgba(26,18,0,0.25); color:#3a2800; background:rgba(26,18,0,0.07); letter-spacing:0.04em; }
+  .exp-entry { margin-bottom:14px; }
+  .exp-title { font-size:13px; font-weight:600; color:#1a1200; margin-bottom:2px; }
+  .exp-meta { font-size:11px; color:#5a4200; letter-spacing:0.06em; margin-bottom:5px; }
+  .exp-entry ul { padding-left:15px; }
+  .exp-entry ul li { font-size:12.5px; color:#2a1f00; line-height:1.72; }
+  .divider { border:none; border-top:1px solid rgba(26,18,0,0.15); margin:12px 0; }
+  .contact-row { display:flex; flex-direction:column; gap:10px; margin-bottom:18px; }
+  .contact-item { display:flex; align-items:center; gap:10px; font-size:13px; color:#2a1f00; }
+  .profile-img { width:100%; height:160px; object-fit:cover; object-position:center; border-radius:12px; margin-top:18px; margin-bottom:0; display:block; }
+  .back-btn { background:none; border:1px solid rgba(26,18,0,0.3); border-radius:50px; padding:6px 14px; font-size:11px; letter-spacing:0.1em; cursor:pointer; color:#3a2800; font-family:system-ui,sans-serif; transition:background 0.2s; margin-bottom:16px; display:inline-flex; align-items:center; gap:6px; }
+  .back-btn:hover { background:rgba(26,18,0,0.08); }
+
+  /* PROJECT CARDS */
+  .proj-card { background:rgba(26,18,0,0.08); border:1px solid rgba(26,18,0,0.15); border-radius:12px; padding:14px 16px; margin-bottom:10px; cursor:pointer; transition:background 0.2s,transform 0.15s,border-color 0.2s; display:flex; justify-content:space-between; align-items:center; }
+  .proj-card:hover { background:rgba(26,18,0,0.14); transform:translateX(3px); border-color:rgba(26,18,0,0.3); }
+  .proj-card-title { font-size:13px; font-weight:600; color:#1a1200; margin-bottom:2px; }
+  .proj-card-meta { font-size:11px; color:#5a4200; }
+  .proj-arrow { font-size:16px; color:#4a3800; opacity:0.6; }
+
+  /* HOVER PREVIEW POPUP */
+  #proj-preview {
+    position: fixed;
+    width: 230px;
+    background: #100d00;
+    border: 1px solid rgba(224,197,143,0.18);
+    border-radius: 16px;
+    overflow: hidden;
+    pointer-events: none;
+    opacity: 0;
+    transform: scale(0.94) translateX(-8px);
+    transition: opacity 0.22s ease, transform 0.22s ease;
+    z-index: 9999;
+    box-shadow: 0 24px 64px rgba(0,0,0,0.7);
+  }
+  #proj-preview.show { opacity: 1; transform: scale(1) translateX(0); }
+  .pp-imgwrap { width:100%; height:130px; display:flex; align-items:center; justify-content:center; flex-direction:column; gap:6px; background: linear-gradient(135deg,#1e1600 0%,#2e2000 60%,#1a1200 100%); }
+  .pp-imgwrap img { width:100%; height:130px; object-fit:cover; display:block; }
+  .pp-icon { font-size:36px; line-height:1; }
+  .pp-sublabel { font-size:9px; letter-spacing:0.2em; color:rgba(224,197,143,0.3); text-transform:uppercase; }
+  .pp-body { padding:12px 14px 14px; }
+  .pp-title { font-size:12.5px; font-weight:600; color:#E0C58F; margin-bottom:4px; }
+  .pp-desc { font-size:11px; color:rgba(224,197,143,0.5); line-height:1.55; margin-bottom:10px; }
+  .pp-tags { display:flex; flex-wrap:wrap; gap:4px; }
+  .pp-tag { font-size:9.5px; padding:2px 8px; border-radius:50px; background:rgba(224,197,143,0.08); border:1px solid rgba(224,197,143,0.18); color:rgba(224,197,143,0.55); }
+</style>
+</head>
+<body>
+<div id="loading"><div class="ring"></div><span id="ltxt">Loading Earth…</span></div>
+<canvas id="c"></canvas>
+
+<div id="ui">
+  <h1>Jeyasri </h1>
+  <h1>Sundar</h1>
+  <p id="ui-hint">Drag to rotate &nbsp;·&nbsp; Scroll to zoom</p>
+  <button id="plane-btn" onclick="startJourney()">
+    <span class="plane-icon">✈</span>
+    <span class="btn-label">Start Journey</span>
+  </button>
+</div>
+<div id="coords">LAT —°&nbsp; LON —°</div>
+
+<!-- Day/Night Toggle -->
+<button id="daynight-btn" onclick="toggleDayNight()">
+  <span class="dn-icon">☀️</span>
+  <span class="dn-label">Day</span>
+</button>
+
+<!-- Top Navbar -->
+<nav id="top-nav">
+  <div class="nav-item" id="nav-about"    onclick="navTo('india')"    ><span class="nav-dot"></span>About</div>
+  <div class="nav-item" id="nav-projects" onclick="navTo('thailand')" ><span class="nav-dot"></span>Projects</div>
+  <div class="nav-item" id="nav-exp"      onclick="navTo('china')"    ><span class="nav-dot"></span>Experience</div>
+  <div class="nav-item" id="nav-skills"   onclick="navTo('indonesia')"><span class="nav-dot"></span>Skills</div>
+  <div class="nav-item" id="nav-contact"  onclick="navTo('sydney')"   ><span class="nav-dot"></span>Contact</div>
+</nav>
+
+<!-- Hover Preview -->
+<div id="proj-preview">
+  <div class="pp-imgwrap" id="pp-imgwrap">
+    <div class="pp-icon" id="pp-icon">🏆</div>
+    <div class="pp-sublabel">Preview</div>
+  </div>
+  <div class="pp-body">
+    <div class="pp-title" id="pp-title">Project</div>
+    <div class="pp-desc"  id="pp-desc">Description</div>
+    <div class="pp-tags"  id="pp-tags"></div>
+  </div>
+</div>
+
+<div id="flight-status">
+  <div class="pulse-dot"></div>
+  <span id="flight-text">Flying…</span>
+</div>
+
+<div id="modal-overlay">
+
+  <!-- 1 India About -->
+  <div class="modal-card active" id="card-india">
+    <button class="close-btn" onclick="closeModal()">×</button>
+    <div class="loc-badge">📍 Chennai, India</div>
+    <h2>Jeyasri Sundar</h2>
+    <div class="subtitle">Advanced Computing Student · University of Sydney</div>
+    <p>Hey! I'm a penultimate-year Advanced Computing student at USYD, majoring in Computational Data Science with an 80+ WAM and Dalyell Scholar status. I was born and raised in India — where my passion for technology first took shape.</p>
+    <p>I love building things at the intersection of data, machine learning, and software engineering — whether that's training computer vision models, crafting full-stack web apps, or digging into spatial data to uncover real-world insights.</p>
+    <p>Outside of tech, I'm an Events Director at Google Developer Groups USYD, delivering hackathons and workshops to 200+ students, and a co-founder of Hirayas Indonesia, a UNESCO-accredited NGO focused on educating underprivileged children.</p>
+    <img src="YOUR_IMAGE_URL_HERE" alt="Jeyasri Sundar" class="profile-img">
+    <div class="modal-footer">
+      <div class="dot-row"><div class="dot on"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>
+      <button class="next-btn" onclick="flyTo('thailand')">Projects ✈</button>
+    </div>
+  </div>
+
+  <!-- 2 Thailand Projects -->
+  <div class="modal-card" id="card-thailand">
+    <button class="close-btn" onclick="closeModal()">×</button>
+    <div class="loc-badge">📍 Thailand</div>
+    <h2>Projects</h2>
+    <div class="subtitle">Things I've built — hover to preview, click to explore</div>
+
+    <div class="proj-card" onclick="showProjectCard('proj-matcha')" onmouseenter="showPreview(event,'matcha')" onmouseleave="hidePreview()" onmousemove="movePreview(event)">
+      <div><div class="proj-card-title">🏆 Matcha Match</div><div class="proj-card-meta">2nd Place · OpenxAI HackNode · May 2025</div></div>
+      <span class="proj-arrow">›</span>
+    </div>
+
+    <div class="proj-card" onclick="showProjectCard('proj-cricket')" onmouseenter="showPreview(event,'cricket')" onmouseleave="hidePreview()" onmousemove="movePreview(event)">
+      <div><div class="proj-card-title">🏏 Cricket Analysis &amp; Predictor</div><div class="proj-card-meta">July 2025 – Present · StatsPerform</div></div>
+      <span class="proj-arrow">›</span>
+    </div>
+
+    <div class="proj-card" onclick="showProjectCard('proj-sydney')" onmouseenter="showPreview(event,'sydproj')" onmouseleave="hidePreview()" onmousemove="movePreview(event)">
+      <div><div class="proj-card-title">🏙️ Sydney Suburb Development Analysis</div><div class="proj-card-meta">March 2025 – May 2025</div></div>
+      <span class="proj-arrow">›</span>
+    </div>
+
+    <img src="YOUR_IMAGE_URL_HERE" alt="Jeyasri Sundar" class="profile-img">
+    <div class="modal-footer">
+      <div class="dot-row"><div class="dot"></div><div class="dot on"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>
+      <button class="next-btn" onclick="flyTo('china')">Experience ✈</button>
+    </div>
+  </div>
+
+  <!-- 2a Matcha -->
+  <div class="modal-card" id="proj-matcha">
+    <button class="close-btn" onclick="closeModal()">×</button>
+    <button class="back-btn" onclick="backToProjects()">← Projects</button>
+    <div class="loc-badge">📍 Thailand</div>
+    <h2>Matcha Match</h2>
+    <div class="subtitle">🏆 2nd Place · OpenxAI HackNode · May 2025</div>
+    <p>A full-stack café recommendation app that uses NLP and LLMs to give context-aware, personalised suggestions — not just a list of nearby cafés.</p>
+    <div class="exp-entry"><ul>
+      <li>Built with React (TypeScript) front-end and Django REST API back-end</li>
+      <li>Integrated Google Places API + Ollama LLMs for NLP-driven recommendations</li>
+      <li>Features an interactive map visualisation, streak-tracking calendar, and real-time chatbot</li>
+    </ul></div>
+    <img src="YOUR_IMAGE_URL_HERE" alt="Matcha Match" class="profile-img">
+    <div class="modal-footer">
+      <div class="dot-row"><div class="dot"></div><div class="dot on"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>
+      <button class="next-btn" onclick="flyTo('china')">Experience ✈</button>
+    </div>
+  </div>
+
+  <!-- 2b Cricket -->
+  <div class="modal-card" id="proj-cricket">
+    <button class="close-btn" onclick="closeModal()">×</button>
+    <button class="back-btn" onclick="backToProjects()">← Projects</button>
+    <div class="loc-badge">📍 Thailand</div>
+    <h2>Cricket Analysis &amp; Predictor</h2>
+    <div class="subtitle">July 2025 – Present · Faculty-supervised · StatsPerform</div>
+    <p>An ML-powered cricket win predictor built on ball-by-ball data, designed to make realistic predictions without data leakage.</p>
+    <div class="exp-entry"><ul>
+      <li>Processed 900,000+ rows of ball-by-ball data with weather API integration</li>
+      <li>Engineered 10+ features; exploring ELO rating systems and LSTM-based win prediction</li>
+      <li>Addressing data leakage and enhancing generalisation for realistic predictions</li>
+    </ul></div>
+    <img src="YOUR_IMAGE_URL_HERE" alt="Cricket Predictor" class="profile-img">
+    <div class="modal-footer">
+      <div class="dot-row"><div class="dot"></div><div class="dot on"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>
+      <button class="next-btn" onclick="flyTo('china')">Experience ✈</button>
+    </div>
+  </div>
+
+  <!-- 2c Sydney suburbs -->
+  <div class="modal-card" id="proj-sydney">
+    <button class="close-btn" onclick="closeModal()">×</button>
+    <button class="back-btn" onclick="backToProjects()">← Projects</button>
+    <div class="loc-badge">📍 Thailand</div>
+    <h2>Sydney Suburb Development Analysis</h2>
+    <div class="subtitle">March 2025 – May 2025</div>
+    <p>A spatial data project identifying what drives income inequality across Sydney suburbs, combining geospatial databases with regression modelling.</p>
+    <div class="exp-entry"><ul>
+      <li>Built a PostgreSQL/PostGIS database integrating multi-source datasets &amp; NSW POI API</li>
+      <li>Trained regression models to identify predictors of regional income across Sydney suburbs</li>
+    </ul></div>
+    <img src="YOUR_IMAGE_URL_HERE" alt="Sydney Suburbs" class="profile-img">
+    <div class="modal-footer">
+      <div class="dot-row"><div class="dot"></div><div class="dot on"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>
+      <button class="next-btn" onclick="flyTo('china')">Experience ✈</button>
+    </div>
+  </div>
+
+  <!-- 3 China Experience -->
+  <div class="modal-card" id="card-china">
+    <button class="close-btn" onclick="closeModal()">×</button>
+    <div class="loc-badge">📍 China</div>
+    <h2>Experience</h2>
+    <div class="subtitle">Where I've worked</div>
+    <div class="exp-entry">
+      <div class="exp-title">ML Intern · SafeSight AI</div>
+      <div class="exp-meta">October 2025 – Present</div>
+      <ul>
+        <li>Navigated an end-to-end Python CV codebase for CCTV-based on-site safety monitoring</li>
+        <li>Trained a YOLO-based classifier achieving <strong>97.3% mAP50</strong> for construction vehicle detection</li>
+        <li>Integrated model into production pipeline, doubling the types of vehicles supported</li>
+        <li>Validated FastAPI endpoints via Postman, resolving plantworks detection logic errors</li>
+      </ul>
+    </div>
+    <hr class="divider">
+    <div class="exp-entry">
+      <div class="exp-title">Research Intern · University of Sydney</div>
+      <div class="exp-meta">December 2025 – Present · GIS &amp; Mental Health Project</div>
+      <ul>
+        <li>Processed &amp; modelled datasets across <strong>30,000+ regions</strong> in 5 Australian cities using ArcGIS Pro</li>
+        <li>Trained Random Forest &amp; XGBoost models stratified by socioeconomic quintile</li>
+        <li>Used SHAP to interpret predictions and identify key mental health outcome drivers</li>
+      </ul>
+    </div>
+    <hr class="divider">
+    <div class="exp-entry">
+      <div class="exp-title">Research Intern · Sydney Quantum Academy</div>
+      <div class="exp-meta">February 2026 – March 2026</div>
+      <ul>
+        <li>Built hybrid quantum-classical ML pipelines using Qiskit for anomaly detection</li>
+        <li>Ran controlled experiments across feature maps and ansatz configurations</li>
+        <li>Maintained reproducible Python workflows and contributed to an academic paper</li>
+      </ul>
+    </div>
+    <img src="YOUR_IMAGE_URL_HERE" alt="Jeyasri Sundar" class="profile-img">
+    <div class="modal-footer">
+      <div class="dot-row"><div class="dot"></div><div class="dot"></div><div class="dot on"></div><div class="dot"></div><div class="dot"></div></div>
+      <button class="next-btn" onclick="flyTo('indonesia')">Skills ✈</button>
+    </div>
+  </div>
+
+  <!-- 4 Indonesia Skills -->
+  <div class="modal-card" id="card-indonesia">
+    <button class="close-btn" onclick="closeModal()">×</button>
+    <div class="loc-badge">📍 Indonesia</div>
+    <h2>Skills</h2>
+    <div class="subtitle">Tools &amp; technologies I work with</div>
+    <div class="exp-meta" style="margin-bottom:6px;">Programming</div>
+    <div class="tag-row"><span class="tag">Python</span><span class="tag">Java</span><span class="tag">C++</span><span class="tag">C</span><span class="tag">R</span><span class="tag">SQL</span><span class="tag">JavaScript</span><span class="tag">TypeScript</span></div>
+    <div class="exp-meta" style="margin-bottom:6px;">Machine Learning &amp; CV</div>
+    <div class="tag-row"><span class="tag">PyTorch</span><span class="tag">TensorFlow</span><span class="tag">Scikit-learn</span><span class="tag">YOLO</span><span class="tag">OpenCV</span><span class="tag">Pandas</span><span class="tag">NumPy</span><span class="tag">SHAP</span><span class="tag">Qiskit</span><span class="tag">Matplotlib</span></div>
+    <div class="exp-meta" style="margin-bottom:6px;">Web &amp; Cloud</div>
+    <div class="tag-row"><span class="tag">React</span><span class="tag">Node.js</span><span class="tag">Tailwind CSS</span><span class="tag">Django</span><span class="tag">FastAPI</span><span class="tag">PostgreSQL</span><span class="tag">PostGIS</span><span class="tag">Supabase</span><span class="tag">AWS</span><span class="tag">Vercel</span><span class="tag">Firebase</span></div>
+    <div class="exp-meta" style="margin-bottom:6px;">Tools &amp; Platforms</div>
+    <div class="tag-row"><span class="tag">Git</span><span class="tag">Docker</span><span class="tag">Jenkins</span><span class="tag">ArcGIS Pro</span><span class="tag">Postman</span><span class="tag">JIRA</span><span class="tag">Linux</span><span class="tag">Jupyter</span><span class="tag">AI Studio</span></div>
+    <img src="YOUR_IMAGE_URL_HERE" alt="Jeyasri Sundar" class="profile-img">
+    <div class="modal-footer">
+      <div class="dot-row"><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot on"></div><div class="dot"></div></div>
+      <button class="next-btn" onclick="flyTo('sydney')">Get in touch ✈</button>
+    </div>
+  </div>
+
+  <!-- 5 Sydney Contact -->
+  <div class="modal-card" id="card-sydney">
+    <button class="close-btn" onclick="closeModal()">×</button>
+    <div class="loc-badge">📍 Sydney, Australia</div>
+    <h2>Get in Touch</h2>
+    <div class="subtitle">Based in Sydney · Open to opportunities</div>
+    <p>I'm currently a student at the University of Sydney and open to internships, part-time roles, and collaborative projects — particularly in ML engineering, data science, and full-stack development.</p>
+    <p>I'm also the Events Director at Google Developer Groups USYD, where I help connect students with industry through hackathons and hands-on AI workshops.</p>
+    <div class="contact-row">
+      <div class="contact-item"><span>✉️</span> jsun0793@uni.sydney.edu.au</div>
+      <div class="contact-item"><span>📞</span> +61 434 749 374</div>
+      <div class="contact-item"><span>💼</span> linkedin.com/in/jeyasri-sundar</div>
+    </div>
+    <img src="YOUR_IMAGE_URL_HERE" alt="Jeyasri Sundar" class="profile-img">
+    <div class="modal-footer">
+      <div class="dot-row"><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot on"></div></div>
+      <button class="next-btn" onclick="resetJourney()">↺ Restart</button>
+    </div>
+  </div>
+
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+const ltxt = document.getElementById('ltxt');
+const loadingEl = document.getElementById('loading');
+const flightStatus = document.getElementById('flight-status');
+const flightText = document.getElementById('flight-text');
+const planBtn = document.getElementById('plane-btn');
+const modalOverlay = document.getElementById('modal-overlay');
+const uiHint = document.getElementById('ui-hint');
+const topNav = document.getElementById('top-nav');
+
+let isNightMode = false;
+let dayTexture = null;
+let nightTexture = null;
+
+const renderer = new THREE.WebGLRenderer({canvas:document.getElementById('c'),antialias:true});
+renderer.setSize(innerWidth,innerHeight);
+renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+renderer.setClearColor(0x050a14, 1);
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(45,innerWidth/innerHeight,0.1,1000);
+camera.position.z = 8;
+
+// Star field — 3 layers for depth and brightness
+const starLayers = [
+  {count:12000, spread:600, color:0xffffff,  size:0.18, opacity:0.9},  // dense tiny white
+  {count:3000,  spread:500, color:0xffeef5,  size:0.38, opacity:0.75}, // mid warm pink-white
+  {count:800,   spread:400, color:0xff99bb,  size:0.7,  opacity:0.55}, // large rosy glows
+];
+starLayers.forEach(({count,spread,color,size,opacity})=>{
+  const geo = new THREE.BufferGeometry();
+  const pos = [];
+  for(let i=0;i<count;i++) pos.push((Math.random()-.5)*spread,(Math.random()-.5)*spread,(Math.random()-.5)*spread);
+  geo.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));
+  scene.add(new THREE.Points(geo,new THREE.PointsMaterial({color,size,transparent:true,opacity,sizeAttenuation:true})));
+});
+// Keep references for day/night toggling
+const dayStarMats = scene.children.filter(c=>c.isPoints).map(c=>c.material);
+
+const sunLight = new THREE.DirectionalLight(0xfff8e8,1.5); sunLight.position.set(5,3,4); scene.add(sunLight);
+const ambLight = new THREE.AmbientLight(0xffe0ec,0.7); scene.add(ambLight);
+const rim = new THREE.DirectionalLight(0x1a3366,0.3); rim.position.set(-4,-2,-5); scene.add(rim);
+
+const loader = new THREE.TextureLoader();
+loader.crossOrigin='anonymous';
+const sphereGeo = new THREE.SphereGeometry(1,64,64);
+
+function addAtmosphere(){
+  scene.add(new THREE.Mesh(new THREE.SphereGeometry(1.02,64,64),new THREE.MeshPhongMaterial({color:0x3399ff,transparent:true,opacity:0.06,side:THREE.FrontSide})));
+  scene.add(new THREE.Mesh(new THREE.SphereGeometry(1.08,64,64),new THREE.MeshPhongMaterial({color:0x1155cc,transparent:true,opacity:0.04,side:THREE.BackSide})));
+}
+
+function done(){
+  loadingEl.style.opacity='0';
+  setTimeout(()=>{
+    loadingEl.style.display='none';
+    frozen=true;tweening=true;
+    startTween({fromRotX:rotX,fromRotY:rotY,fromZoom:8,toRotX:rotX,toRotY:rotY,toZoom:2.8,duration:2200,onDone:()=>{frozen=false;introPlaying=false;}});
+  },1000);
+}
+
+function applyTheme(mode){
+  const isN = mode === 'night';
+  const h1 = document.querySelector('#ui h1');
+  const hint = document.querySelector('#ui p');
+  const coords = document.getElementById('coords');
+  const nav = document.getElementById('top-nav');
+  const dnBtn = document.getElementById('daynight-btn');
+  const planeBtn = document.getElementById('plane-btn');
+  if(isN){
+    if(h1){ h1.style.color='rgba(255,220,235,0.92)'; }
+    if(hint){ hint.style.color='rgba(255,200,220,0.45)'; }
+    if(coords){ coords.style.color='rgba(255,200,220,0.35)'; }
+    if(nav){
+      nav.style.background='rgba(5,10,20,0.7)';
+      nav.style.borderColor='rgba(224,197,143,0.2)';
+    }
+    document.querySelectorAll('.nav-item').forEach(n=>{
+      n.style.color='rgba(224,197,143,0.6)';
+    });
+    if(dnBtn){
+      dnBtn.style.background='rgba(5,10,20,0.7)';
+      dnBtn.style.borderColor='rgba(255,255,255,0.18)';
+      dnBtn.style.color='rgba(255,255,255,0.75)';
+    }
+    if(planeBtn){
+      planeBtn.style.background='rgba(255,255,255,0.08)';
+      planeBtn.style.borderColor='rgba(255,255,255,0.18)';
+      planeBtn.style.color='#fff';
+    }
+  } else {
+    if(h1){ h1.style.color='rgba(255,210,225,0.95)'; }
+    if(hint){ hint.style.color='rgba(255,180,210,0.5)'; }
+    if(coords){ coords.style.color='rgba(255,180,210,0.4)'; }
+    if(nav){
+      nav.style.background='rgba(255,180,210,0.1)';
+      nav.style.borderColor='rgba(255,160,200,0.25)';
+    }
+    document.querySelectorAll('.nav-item').forEach(n=>{
+      n.style.color='rgba(255,190,215,0.7)';
+    });
+    if(dnBtn){
+      dnBtn.style.background='rgba(255,180,210,0.1)';
+      dnBtn.style.borderColor='rgba(255,160,200,0.25)';
+      dnBtn.style.color='#FFB915';
+    }
+    if(planeBtn){
+      planeBtn.style.background='rgba(255,180,210,0.1)';
+      planeBtn.style.borderColor='rgba(255,160,200,0.3)';
+      planeBtn.style.color='rgba(255,210,230,0.9)';
+    }
+  }
+}
+
+function toggleDayNight(){
+  isNightMode=!isNightMode;
+  const btn=document.getElementById('daynight-btn');
+  const icon=btn.querySelector('.dn-icon');
+  const label=btn.querySelector('.dn-label');
+  const globe=scene.getObjectByName('globe');
+  if(!globe)return;
+  if(isNightMode){
+    icon.textContent='🌙'; label.textContent='Night';
+    document.body.style.background='#050a14';
+    renderer.setClearColor(0x050a14,1);
+    // Dimmer night stars (city lights = main light source)
+    dayStarMats.forEach((m,i)=>{ m.opacity=[0.35,0.25,0.18][i]||0.3; m.needsUpdate=true; });
+    applyTheme('night');
+    sunLight.intensity=0.25;
+    ambLight.intensity=1.4;
+    const applyNight=(tex)=>{
+      globe.material.map=tex;
+      globe.material.emissiveMap=tex;
+      globe.material.emissive=new THREE.Color(0x221f11);
+      globe.material.emissiveIntensity=0.6;
+      globe.material.shininess=8;
+      globe.material.needsUpdate=true;
+      const clouds=scene.getObjectByName('clouds');
+      if(clouds) clouds.material.opacity=0.12;
+    };
+    if(nightTexture){applyNight(nightTexture);}
+    else{loader.load('https://unpkg.com/three-globe/example/img/earth-night.jpg',(t)=>{nightTexture=t;applyNight(t);},undefined,()=>{});}
+  } else {
+    icon.textContent='☀️'; label.textContent='Day';
+    document.body.style.background='#050a14';
+    renderer.setClearColor(0x050a14,1);
+    // Bright day stars
+    dayStarMats.forEach((m,i)=>{ m.opacity=[0.9,0.75,0.55][i]||0.7; m.needsUpdate=true; });
+    applyTheme('day');
+    sunLight.intensity=1.5;
+    ambLight.intensity=0.6;
+    if(dayTexture){
+      globe.material.map=dayTexture;
+      globe.material.emissiveMap=null;
+      globe.material.emissive=new THREE.Color(0x000000);
+      globe.material.emissiveIntensity=0;
+      globe.material.shininess=22;
+      globe.material.needsUpdate=true;
+      const clouds=scene.getObjectByName('clouds');
+      if(clouds) clouds.material.opacity=0.38;
+    }
+  }
+}
+
+const sources=['https://unpkg.com/three-globe/example/img/earth-blue-marble.jpg','https://cdn.jsdelivr.net/npm/three-globe/example/img/earth-blue-marble.jpg'];
+let tried=0;
+function tryLoad(src){
+  ltxt.textContent='Loading satellite texture…';
+  loader.load(src,(tex)=>{
+    dayTexture=tex;
+    ltxt.textContent='Loading elevation data…';
+    loader.load('https://unpkg.com/three-globe/example/img/earth-topology.png',(bumpTex)=>{
+      const mat=new THREE.MeshPhongMaterial({map:tex,bumpMap:bumpTex,bumpScale:0.06,specular:new THREE.Color(0x2255aa),shininess:22});
+      const globe=new THREE.Mesh(sphereGeo,mat); globe.name='globe'; scene.add(globe);
+      loader.load('https://unpkg.com/three-globe/example/img/earth-clouds.png',(cloudTex)=>{
+        const clouds=new THREE.Mesh(new THREE.SphereGeometry(1.006,64,64),new THREE.MeshPhongMaterial({map:cloudTex,transparent:true,opacity:0.38,depthWrite:false}));
+        clouds.name='clouds'; scene.add(clouds);
+      },undefined,()=>{});
+      addAtmosphere(); done();
+    },undefined,()=>{
+      const mat=new THREE.MeshPhongMaterial({map:tex,specular:new THREE.Color(0x2255aa),shininess:22});
+      const globe=new THREE.Mesh(sphereGeo,mat); globe.name='globe'; scene.add(globe);
+      addAtmosphere(); done();
+    });
+  },(e)=>{ltxt.textContent=`Loaded ${Math.round((e.loaded/e.total||0)*100)}%`;}
+  ,()=>{tried++;if(tried<sources.length){tryLoad(sources[tried]);}else{useCanvasFallback();}});
+}
+
+function useCanvasFallback(){
+  const W=2048,H=1024;
+  const cv=document.createElement('canvas'); cv.width=W; cv.height=H;
+  const ctx=cv.getContext('2d');
+  ctx.fillStyle='#0a1e3c'; ctx.fillRect(0,0,W,H);
+  function ll(lon,lat){return[(lon+180)/360*W,(90-lat)/180*H];}
+  function poly(coords,fill='#2a7a35'){ctx.beginPath();coords.forEach(([lon,lat],i)=>{const[x,y]=ll(lon,lat);i===0?ctx.moveTo(x,y):ctx.lineTo(x,y);});ctx.closePath();ctx.fillStyle=fill;ctx.fill();}
+  poly([[-168,72],[-145,72],[-130,70],[-120,72],[-100,75],[-80,73],[-65,68],[-60,62],[-52,46],[-55,44],[-66,44],[-70,42],[-74,40],[-76,35],[-80,25],[-85,29],[-90,28],[-97,25],[-105,22],[-110,24],[-115,30],[-120,34],[-124,37],[-124,49],[-130,55],[-140,58],[-152,60],[-160,58],[-165,62],[-168,66]]);
+  poly([[-6,36],[2,36],[10,38],[16,38],[24,38],[32,32],[36,28],[38,22],[42,12],[44,10],[42,2],[40,-2],[38,-8],[36,-16],[32,-26],[28,-34],[20,-36],[16,-34],[12,-28],[10,-20],[8,-5],[2,4],[0,8],[-4,10],[-10,8],[-16,10],[-18,16],[-14,22],[-8,28],[-4,32]]);
+  poly([[-180,-66],[-120,-62],[-60,-64],[0,-66],[30,-68],[60,-64],[90,-66],[120,-62],[150,-64],[180,-66],[180,-90],[-180,-90]],'#c8ddf0');
+  const tex=new THREE.CanvasTexture(cv);
+  dayTexture=tex;
+  const mat=new THREE.MeshPhongMaterial({map:tex,specular:new THREE.Color(0x224466),shininess:15});
+  const globe=new THREE.Mesh(sphereGeo,mat); globe.name='globe'; scene.add(globe);
+  addAtmosphere(); done();
+}
+
+tryLoad(sources[0]);
+
+let isDragging=false,prevX=0,prevY=0;
+let rotX=0.3,rotY=0,velX=0,velY=0;
+let targetZoom=2.8,currentZoom=8;
+let introPlaying=true,frozen=false,tweening=false,journeyStarted=false;
+
+const STOPS={
+  india:    {lon:80, lat:20, label:'Flying to India…',    card:'card-india',    zoom:1.72,nav:'nav-about'},
+  thailand: {lon:101,lat:15, label:'Flying to Thailand…', card:'card-thailand', zoom:1.72,nav:'nav-projects'},
+  china:    {lon:104,lat:35, label:'Flying to China…',    card:'card-china',    zoom:1.72,nav:'nav-exp'},
+  indonesia:{lon:118,lat:-2, label:'Flying to Indonesia…',card:'card-indonesia',zoom:1.72,nav:'nav-skills'},
+  sydney:   {lon:151,lat:-34,label:'Flying to Sydney…',   card:'card-sydney',   zoom:1.72,nav:'nav-contact'},
+};
+
+const PREVIEWS={
+  matcha:  {icon:'🏆',title:'Matcha Match',       desc:'Full-stack café recommender powered by NLP & LLMs.',           tags:['React','Django','Ollama','Maps API']},
+  cricket: {icon:'🏏',title:'Cricket Predictor',  desc:'ML win predictor trained on 900K+ rows of ball-by-ball data.',tags:['LSTM','ELO','Python','Weather API']},
+  sydproj: {icon:'🏙️',title:'Sydney Suburbs',     desc:'Spatial analysis of income inequality drivers across Sydney.', tags:['PostGIS','XGBoost','ArcGIS','PostgreSQL']},
+};
+
+const preview=document.getElementById('proj-preview');
+function showPreview(e,key){
+  const d=PREVIEWS[key]; if(!d) return;
+  document.getElementById('pp-icon').textContent=d.icon;
+  document.getElementById('pp-title').textContent=d.title;
+  document.getElementById('pp-desc').textContent=d.desc;
+  document.getElementById('pp-tags').innerHTML=d.tags.map(t=>`<span class="pp-tag">${t}</span>`).join('');
+  movePreview(e);
+  preview.classList.add('show');
+}
+function hidePreview(){ preview.classList.remove('show'); }
+function movePreview(e){
+  const pw=230,ph=280,pad=18;
+  let x=e.clientX-pw-pad;
+  if(x<8) x=e.clientX+pad;
+  let y=e.clientY-ph/2;
+  y=Math.max(8,Math.min(window.innerHeight-ph-8,y));
+  preview.style.left=x+'px';
+  preview.style.top=y+'px';
+}
+
+function geoToRot(lon,lat){return{rotYTarget:(-lon*Math.PI/180)+Math.PI*1.5,rotXTarget:(lat*Math.PI/180)};}
+function easeInOut(t){return t<0.5?2*t*t:-1+(4-2*t)*t;}
+let tweenObj=null;
+function startTween(p){tweenObj={...p,startTime:performance.now()};}
+function updateTween(now){
+  if(!tweenObj)return;
+  const el=now-tweenObj.startTime,t=easeInOut(Math.min(el/tweenObj.duration,1));
+  rotX=tweenObj.fromRotX+(tweenObj.toRotX-tweenObj.fromRotX)*t;
+  rotY=tweenObj.fromRotY+(tweenObj.toRotY-tweenObj.fromRotY)*t;
+  targetZoom=currentZoom=tweenObj.fromZoom+(tweenObj.toZoom-tweenObj.fromZoom)*t;
+  if(el>=tweenObj.duration){
+    rotX=tweenObj.toRotX;rotY=tweenObj.toRotY;targetZoom=currentZoom=tweenObj.toZoom;
+    const cb=tweenObj.onDone;tweenObj=null;tweening=false;if(cb)cb();
+  }
+}
+
+function setActiveNav(id){
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  if(id) document.getElementById(id).classList.add('active');
+}
+function showCard(key){
+  const s=STOPS[key];
+  document.querySelectorAll('.modal-card').forEach(c=>c.classList.remove('active'));
+  document.getElementById(s.card).classList.add('active');
+  modalOverlay.classList.add('visible');
+  setActiveNav(s.nav);
+}
+function startJourney(){
+  frozen=true;tweening=true;velX=0;velY=0;journeyStarted=true;
+  planBtn.classList.add('hidden');
+  uiHint.style.opacity='0';
+  topNav.classList.add('visible');
+  flyTo('india');
+}
+function flyTo(key){
+  modalOverlay.classList.remove('visible');
+  hidePreview();
+  const s=STOPS[key];
+  flightText.textContent=s.label;
+  flightStatus.classList.add('visible');
+  frozen=true;tweening=true;
+  const{rotYTarget,rotXTarget}=geoToRot(s.lon,s.lat);
+  startTween({fromRotX:rotX,fromRotY:rotY,fromZoom:currentZoom,toRotX:rotXTarget,toRotY:rotYTarget,toZoom:s.zoom,
+    duration:2400,
+    onDone:()=>{flightStatus.classList.remove('visible');setTimeout(()=>showCard(key),300);}});
+}
+function navTo(key){
+  if(!journeyStarted){journeyStarted=true;planBtn.classList.add('hidden');uiHint.style.opacity='0';topNav.classList.add('visible');}
+  flyTo(key);
+}
+function showProjectCard(id){
+  hidePreview();
+  document.querySelectorAll('.modal-card').forEach(c=>c.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+function backToProjects(){
+  document.querySelectorAll('.modal-card').forEach(c=>c.classList.remove('active'));
+  document.getElementById('card-thailand').classList.add('active');
+}
+function closeModal(){
+  modalOverlay.classList.remove('visible');
+  hidePreview();
+  setActiveNav(null);
+  frozen=false;
+}
+function resetJourney(){
+  modalOverlay.classList.remove('visible');
+  hidePreview();
+  setActiveNav(null);
+  frozen=true;tweening=true;
+  startTween({fromRotX:rotX,fromRotY:rotY,fromZoom:currentZoom,toRotX:0.3,toRotY:0,toZoom:2.8,duration:2000,
+    onDone:()=>{
+      frozen=false;journeyStarted=false;
+      planBtn.classList.remove('hidden');
+      uiHint.style.opacity='1';
+      // navbar intentionally stays visible after restart
+    }});
+}
+
+const cvs=document.getElementById('c');
+cvs.addEventListener('mousedown',e=>{if(frozen||tweening)return;isDragging=true;prevX=e.clientX;prevY=e.clientY;velX=0;velY=0;});
+window.addEventListener('mouseup',()=>{isDragging=false;});
+window.addEventListener('mousemove',e=>{
+  if(!isDragging||frozen||tweening)return;
+  velX=(e.clientX-prevX)*0.004;velY=(e.clientY-prevY)*0.004;
+  rotY+=velX;rotX+=velY;rotX=Math.max(-Math.PI/2.2,Math.min(Math.PI/2.2,rotX));
+  prevX=e.clientX;prevY=e.clientY;
+  const lat=(-rotX*180/Math.PI).toFixed(1),lon=(((rotY*180/Math.PI)%360+540)%360-180).toFixed(1);
+  document.getElementById('coords').textContent=`LAT ${lat>0?'+':''}${lat}°   LON ${lon>0?'+':''}${lon}°`;
+});
+cvs.addEventListener('wheel',e=>{if(frozen||tweening)return;e.preventDefault();targetZoom=Math.max(1.3,Math.min(6,targetZoom+e.deltaY*0.004));},{passive:false});
+cvs.addEventListener('touchstart',e=>{if(frozen||tweening)return;const t=e.touches[0];isDragging=true;prevX=t.clientX;prevY=t.clientY;},{passive:true});
+window.addEventListener('touchend',()=>{isDragging=false;});
+window.addEventListener('touchmove',e=>{
+  if(!isDragging||frozen||tweening)return;
+  const t=e.touches[0];velX=(t.clientX-prevX)*0.004;velY=(t.clientY-prevY)*0.004;
+  rotY+=velX;rotX+=velY;rotX=Math.max(-Math.PI/2.2,Math.min(Math.PI/2.2,rotX));
+  prevX=t.clientX;prevY=t.clientY;
+},{passive:true});
+
+function animate(now){
+  requestAnimationFrame(animate);
+  if(tweenObj){updateTween(now);}
+  else if(!frozen&&!isDragging){
+    velX*=0.93;velY*=0.93;rotY+=velX;rotX+=velY;
+    if(Math.abs(velX)<0.0001&&Math.abs(velY)<0.0001)rotY+=0.0018;
+  }
+  const g=scene.getObjectByName('globe'),cl=scene.getObjectByName('clouds');
+  if(g){g.rotation.y=rotY;g.rotation.x=rotX;}
+  if(cl){cl.rotation.y=rotY+0.0003;cl.rotation.x=rotX;}
+  if(!tweenObj){currentZoom+=(targetZoom-currentZoom)*0.08;}
+  camera.position.z=currentZoom;
+  renderer.render(scene,camera);
+}
+window.addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight);});
+animate(0);
+</script>
+</body>
+</html>
