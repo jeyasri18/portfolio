@@ -4,18 +4,14 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Jeyasri Sundar · Portfolio</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400..700;1,400..700&family=Playfair+Display:ital,wght@0,400..900;1,400..900&display=swap" rel="stylesheet">
-
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
-  body { background: #050a14; overflow: hidden; width: 100vw; height: 100vh; font-family: Lora, sans-serif; }
+  body { background: #050a14; overflow: hidden; width: 100vw; height: 100vh; font-family: system-ui, sans-serif; }
   canvas { display: block; }
   #ui { position: fixed; top: 24px; left: 28px; color: rgba(255,255,255,0.85); pointer-events: none; z-index: 10; }
-  #ui h1 { font-size: 56px; font-weight: 100; letter-spacing: 0.22em; text-transform: uppercase; color: #FFB915; margin-bottom: 8px; line-height: 1; transition: color 0.4s; }
+  #ui h1 { font-size: 56px; font-weight: 100; letter-spacing: 0.22em; text-transform: uppercase; color: rgba(255,210,225,0.95); margin-bottom: 8px; line-height: 1; transition: color 0.4s; }
   #ui p { font-size: 11px; letter-spacing: 0.12em; color: rgba(255,180,210,0.5); transition: opacity 0.5s, color 0.4s; margin-bottom: 14px; }
-  #coords { position: fixed; bottom: 24px; left: 28px; font-family: Lora, sans-serif; font-size: 12px; color: rgba(255,180,210,0.4); letter-spacing: 0.08em; pointer-events: none; z-index: 10; transition: color 0.4s; }
+  #coords { position: fixed; bottom: 24px; left: 28px; font-family: 'Courier New', monospace; font-size: 12px; color: rgba(255,180,210,0.4); letter-spacing: 0.08em; pointer-events: none; z-index: 10; transition: color 0.4s; }
   #loading { position: fixed; inset: 0; background: #050a14; display: flex; flex-direction: column; align-items: center; justify-content: center; color: rgba(255,220,230,0.6); font-size: 12px; letter-spacing: 0.2em; text-transform: uppercase; gap: 16px; z-index: 100; transition: opacity 1s; }
   .ring { width: 40px; height: 40px; border: 1px solid rgba(255,255,255,0.12); border-top-color: rgba(255,220,235,0.8); border-radius: 50%; animation: spin 1s linear infinite; }
   @keyframes spin { to { transform: rotate(360deg); } }
@@ -58,11 +54,11 @@
     position: fixed; top: 20px; right: 24px; z-index: 60;
     background: rgba(255,180,210,0.1); border: 1px solid rgba(255,160,200,0.25);
     border-radius: 50px; padding: 8px 16px;
-    color: #FFB915; font-size: 11px; letter-spacing: 0.15em; text-transform: uppercase;
+    color: rgba(255,210,230,0.85); font-size: 11px; letter-spacing: 0.15em; text-transform: uppercase;
     cursor: pointer; display: flex; align-items: center; gap: 8px;
     backdrop-filter: blur(16px);
     transition: background 0.3s, border-color 0.3s, color 0.3s;
-    font-family: Lora, sans-serif;
+    font-family: system-ui, sans-serif;
   }
   #daynight-btn:hover { background: rgba(255,180,210,0.2); border-color: rgba(255,160,200,0.5); color:rgba(255,230,245,1); }
   #daynight-btn .dn-icon { font-size: 15px; line-height:1; }
@@ -119,30 +115,40 @@
   .proj-arrow { font-size:16px; color:#4a3800; opacity:0.6; }
 
   /* HOVER PREVIEW POPUP */
-  #proj-preview {
+  /* Preview stack container */
+  #preview-stack {
     position: fixed;
-    width: 230px;
-    background: #100d00;
-    border: 1px solid rgba(224,197,143,0.18);
-    border-radius: 16px;
-    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
     pointer-events: none;
-    opacity: 0;
-    transform: scale(0.94) translateX(-8px);
-    transition: opacity 0.22s ease, transform 0.22s ease;
     z-index: 9999;
-    box-shadow: 0 24px 64px rgba(0,0,0,0.7);
+    top: 0; left: 0;
   }
-  #proj-preview.show { opacity: 1; transform: scale(1) translateX(0); }
-  .pp-imgwrap { width:100%; height:130px; display:flex; align-items:center; justify-content:center; flex-direction:column; gap:6px; background: linear-gradient(135deg,#1e1600 0%,#2e2000 60%,#1a1200 100%); }
-  .pp-imgwrap img { width:100%; height:130px; object-fit:cover; display:block; }
-  .pp-icon { font-size:36px; line-height:1; }
-  .pp-sublabel { font-size:9px; letter-spacing:0.2em; color:rgba(224,197,143,0.3); text-transform:uppercase; }
-  .pp-body { padding:12px 14px 14px; }
-  .pp-title { font-size:12.5px; font-weight:600; color:#E0C58F; margin-bottom:4px; }
-  .pp-desc { font-size:11px; color:rgba(224,197,143,0.5); line-height:1.55; margin-bottom:10px; }
-  .pp-tags { display:flex; flex-wrap:wrap; gap:4px; }
-  .pp-tag { font-size:9.5px; padding:2px 8px; border-radius:50px; background:rgba(224,197,143,0.08); border:1px solid rgba(224,197,143,0.18); color:rgba(224,197,143,0.55); }
+  .pp-card {
+    width: 210px;
+    background: #0e0b00;
+    border: 1px solid rgba(224,197,143,0.18);
+    border-radius: 14px;
+    overflow: hidden;
+    opacity: 0;
+    transform: translateX(14px) scale(0.95);
+    transition: opacity 0.28s ease, transform 0.28s ease;
+    box-shadow: 0 16px 48px rgba(0,0,0,0.75);
+  }
+  .pp-card.show { opacity: 1; transform: translateX(0) scale(1); }
+  .pp-card:nth-child(2) { transition-delay: 0.07s; }
+  .pp-card:nth-child(3) { transition-delay: 0.14s; }
+  .pp-imgwrap { width:100%; height:110px; display:flex; align-items:center; justify-content:center; flex-direction:column; gap:5px; background: linear-gradient(135deg,#1e1600 0%,#2e2000 60%,#1a1200 100%); }
+  .pp-imgwrap img { width:100%; height:110px; object-fit:cover; display:block; }
+  .pp-icon { font-size:30px; line-height:1; }
+  .pp-sublabel { font-size:9px; letter-spacing:0.18em; color:rgba(224,197,143,0.3); text-transform:uppercase; }
+  .pp-body { padding:10px 12px 12px; }
+  .pp-label { font-size:9px; letter-spacing:0.15em; text-transform:uppercase; color:rgba(224,197,143,0.35); margin-bottom:3px; }
+  .pp-title { font-size:12px; font-weight:600; color:#E0C58F; margin-bottom:4px; line-height:1.3; }
+  .pp-desc { font-size:10.5px; color:rgba(224,197,143,0.5); line-height:1.5; margin-bottom:8px; }
+  .pp-tags { display:flex; flex-wrap:wrap; gap:3px; }
+  .pp-tag { font-size:9px; padding:2px 7px; border-radius:50px; background:rgba(224,197,143,0.07); border:1px solid rgba(224,197,143,0.16); color:rgba(224,197,143,0.5); }
 </style>
 </head>
 <body>
@@ -150,8 +156,7 @@
 <canvas id="c"></canvas>
 
 <div id="ui">
-  <h1>Jeyasri </h1>
-  <h1>Sundar</h1>
+  <h1>Jeyasri Sundar</h1>
   <p id="ui-hint">Drag to rotate &nbsp;·&nbsp; Scroll to zoom</p>
   <button id="plane-btn" onclick="startJourney()">
     <span class="plane-icon">✈</span>
@@ -176,17 +181,7 @@
 </nav>
 
 <!-- Hover Preview -->
-<div id="proj-preview">
-  <div class="pp-imgwrap" id="pp-imgwrap">
-    <div class="pp-icon" id="pp-icon">🏆</div>
-    <div class="pp-sublabel">Preview</div>
-  </div>
-  <div class="pp-body">
-    <div class="pp-title" id="pp-title">Project</div>
-    <div class="pp-desc"  id="pp-desc">Description</div>
-    <div class="pp-tags"  id="pp-tags"></div>
-  </div>
-</div>
+<div id="preview-stack"></div>
 
 <div id="flight-status">
   <div class="pulse-dot"></div>
@@ -218,17 +213,17 @@
     <h2>Projects</h2>
     <div class="subtitle">Things I've built — hover to preview, click to explore</div>
 
-    <div class="proj-card" onclick="showProjectCard('proj-matcha')" onmouseenter="showPreview(event,'matcha')" onmouseleave="hidePreview()" onmousemove="movePreview(event)">
+    <div class="proj-card" onclick="showProjectCard('proj-matcha')" onmouseenter="showPreviewKeyed(event,'matcha')" onmouseleave="hidePreview()">
       <div><div class="proj-card-title">🏆 Matcha Match</div><div class="proj-card-meta">2nd Place · OpenxAI HackNode · May 2025</div></div>
       <span class="proj-arrow">›</span>
     </div>
 
-    <div class="proj-card" onclick="showProjectCard('proj-cricket')" onmouseenter="showPreview(event,'cricket')" onmouseleave="hidePreview()" onmousemove="movePreview(event)">
+    <div class="proj-card" onclick="showProjectCard('proj-cricket')" onmouseenter="showPreviewKeyed(event,'cricket')" onmouseleave="hidePreview()">
       <div><div class="proj-card-title">🏏 Cricket Analysis &amp; Predictor</div><div class="proj-card-meta">July 2025 – Present · StatsPerform</div></div>
       <span class="proj-arrow">›</span>
     </div>
 
-    <div class="proj-card" onclick="showProjectCard('proj-sydney')" onmouseenter="showPreview(event,'sydproj')" onmouseleave="hidePreview()" onmousemove="movePreview(event)">
+    <div class="proj-card" onclick="showProjectCard('proj-sydney')" onmouseenter="showPreviewKeyed(event,'sydproj')" onmouseleave="hidePreview()">
       <div><div class="proj-card-title">🏙️ Sydney Suburb Development Analysis</div><div class="proj-card-meta">March 2025 – May 2025</div></div>
       <span class="proj-arrow">›</span>
     </div>
@@ -489,7 +484,7 @@ function applyTheme(mode){
     if(dnBtn){
       dnBtn.style.background='rgba(255,180,210,0.1)';
       dnBtn.style.borderColor='rgba(255,160,200,0.25)';
-      dnBtn.style.color='#FFB915';
+      dnBtn.style.color='rgba(255,210,230,0.85)';
     }
     if(planeBtn){
       planeBtn.style.background='rgba(255,180,210,0.1)';
@@ -606,31 +601,79 @@ const STOPS={
 };
 
 const PREVIEWS={
-  matcha:  {icon:'🏆',title:'Matcha Match',       desc:'Full-stack café recommender powered by NLP & LLMs.',           tags:['React','Django','Ollama','Maps API']},
-  cricket: {icon:'🏏',title:'Cricket Predictor',  desc:'ML win predictor trained on 900K+ rows of ball-by-ball data.',tags:['LSTM','ELO','Python','Weather API']},
-  sydproj: {icon:'🏙️',title:'Sydney Suburbs',     desc:'Spatial analysis of income inequality drivers across Sydney.', tags:['PostGIS','XGBoost','ArcGIS','PostgreSQL']},
+  matcha:[
+    {label:'Stack',      icon:'🏆', title:'Matcha Match',         desc:'2nd place at OpenxAI HackNode — full-stack LLM café recommender.',   tags:['React','TypeScript','Django']},
+    {label:'Intelligence',icon:'🤖',title:'NLP & LLM Engine',     desc:'Google Places + Ollama driving context-aware personalised picks.',    tags:['Ollama','NLP','REST API']},
+    {label:'Features',   icon:'🗺️', title:'Map & Streak Tracker', desc:'Interactive map view, streak-tracking calendar, real-time chatbot.',  tags:['Leaflet','Calendar UI','WebSocket']},
+  ],
+  cricket:[
+    {label:'Data',       icon:'🏏', title:'Cricket Predictor',    desc:'ML win predictor on 900K+ rows of ball-by-ball match data.',          tags:['Python','Pandas','Weather API']},
+    {label:'Models',     icon:'📈', title:'LSTM & ELO Rating',    desc:'Sequential LSTM model plus ELO-based team strength estimation.',       tags:['PyTorch','LSTM','ELO']},
+    {label:'Research',   icon:'🎓', title:'Faculty Supervised',   desc:'Supervised by USYD faculty, partnered with StatsPerform.',            tags:['StatsPerform','USYD','Research']},
+  ],
+  sydproj:[
+    {label:'Spatial DB', icon:'🏙️', title:'Sydney Suburbs',       desc:'PostgreSQL/PostGIS database integrating NSW POI API & ABS data.',     tags:['PostgreSQL','PostGIS','NSW API']},
+    {label:'Modelling',  icon:'📊', title:'Regression Analysis',  desc:'Regression models identifying income inequality predictors.',          tags:['Scikit-learn','XGBoost','SHAP']},
+    {label:'Insight',    icon:'🗺️', title:'Geospatial Insight',   desc:'ArcGIS Pro visualisations across Sydney\u2019s 300+ suburbs.',            tags:['ArcGIS Pro','GIS','Choropleth']},
+  ],
 };
 
-const preview=document.getElementById('proj-preview');
+const previewStack=document.getElementById('preview-stack');
+let previewTimeout=null;
+
+function buildCard(item){
+  return `<div class="pp-card">
+    <div class="pp-imgwrap"><div class="pp-icon">${item.icon}</div><div class="pp-sublabel">${item.label}</div></div>
+    <div class="pp-body">
+      <div class="pp-title">${item.title}</div>
+      <div class="pp-desc">${item.desc}</div>
+      <div class="pp-tags">${item.tags.map(t=>`<span class="pp-tag">${t}</span>`).join('')}</div>
+    </div>
+  </div>`;
+}
+
 function showPreview(e,key){
-  const d=PREVIEWS[key]; if(!d) return;
-  document.getElementById('pp-icon').textContent=d.icon;
-  document.getElementById('pp-title').textContent=d.title;
-  document.getElementById('pp-desc').textContent=d.desc;
-  document.getElementById('pp-tags').innerHTML=d.tags.map(t=>`<span class="pp-tag">${t}</span>`).join('');
-  movePreview(e);
-  preview.classList.add('show');
+  const items=PREVIEWS[key]; if(!items) return;
+  clearTimeout(previewTimeout);
+  previewStack.innerHTML=items.map(buildCard).join('');
+  positionStack(e);
+  // stagger show class
+  const cards=previewStack.querySelectorAll('.pp-card');
+  cards.forEach((c,i)=>{ setTimeout(()=>c.classList.add('show'),i*70); });
 }
-function hidePreview(){ preview.classList.remove('show'); }
-function movePreview(e){
-  const pw=230,ph=280,pad=18;
-  let x=e.clientX-pw-pad;
-  if(x<8) x=e.clientX+pad;
-  let y=e.clientY-ph/2;
-  y=Math.max(8,Math.min(window.innerHeight-ph-8,y));
-  preview.style.left=x+'px';
-  preview.style.top=y+'px';
+
+function hidePreview(){
+  clearTimeout(previewTimeout);
+  const cards=previewStack.querySelectorAll('.pp-card');
+  cards.forEach(c=>c.classList.remove('show'));
+  previewTimeout=setTimeout(()=>{ previewStack.innerHTML=''; },350);
 }
+
+function positionStack(e){
+  // Place to the right of the modal card. Find modal's right edge.
+  const modal=document.querySelector('.modal-card.active');
+  let x, y;
+  if(modal){
+    const r=modal.getBoundingClientRect();
+    x=r.right+16;
+    // If would overflow right edge, flip to left
+    if(x+220>window.innerWidth) x=r.left-220-16;
+    y=r.top + (r.height/2) - (PREVIEWS[currentPreviewKey]||[]).length*100;
+    y=Math.max(12, Math.min(window.innerHeight - (PREVIEWS[currentPreviewKey]||[]).length*160 - 12, y));
+  } else {
+    x=e.clientX+20; y=e.clientY-80;
+  }
+  previewStack.style.left=x+'px';
+  previewStack.style.top=y+'px';
+}
+
+let currentPreviewKey='';
+function showPreviewKeyed(e,key){
+  currentPreviewKey=key;
+  showPreview(e,key);
+}
+
+function movePreview(e){ /* position is fixed on enter, no mouse tracking needed */ }
 
 function geoToRot(lon,lat){return{rotYTarget:(-lon*Math.PI/180)+Math.PI*1.5,rotXTarget:(lat*Math.PI/180)};}
 function easeInOut(t){return t<0.5?2*t*t:-1+(4-2*t)*t;}
